@@ -1,5 +1,5 @@
- Skeleton project for the 'beatit' project, i.e. inertial smoking detection from
-the wrist via Smartwatches.
+ Inertial smoking detection from the wrist via Smartwatches.
+Project of Team2
 
  The segfeat module is a basic implementation for segmenting a time-series of
 inertial sensor data, and extracting a simple statistics feature vector. It can
