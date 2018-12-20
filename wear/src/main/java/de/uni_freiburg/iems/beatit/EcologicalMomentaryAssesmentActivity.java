@@ -13,6 +13,8 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Calendar;
 
 public class EcologicalMomentaryAssesmentActivity extends WearableActivity implements SensorEventListener {
@@ -48,10 +50,15 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity imple
                     Environment.DIRECTORY_DOCUMENTS), "beatit.txt");
             file.setWritable(true);
             if (!file.mkdirs()) {
-                mTextView.setText(file.getAbsolutePath());
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    //e.printStackTrace();
+                    //mTextView.setText(e.getMessage());
+                }
             }
         }
-        // geting the device Time.
+        // getting the device Time.
         calendar = Calendar.getInstance();
         format = new SimpleDateFormat("HH:mm:ss");
 
@@ -81,11 +88,12 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity imple
 
     private void writeToFile (String line) {
         try {
-            fileStream = new FileOutputStream(file, true);
+            //fileStream = new FileOutputStream(file, true);
+            fileStream = openFileOutput("beatit.txt", MODE_APPEND);
             fileStream.write(line.getBytes());
             fileStream.close();
         } catch (Exception e) {
-           // mTextView.setText(e.getMessage());
+           mTextView.setText(e.getMessage());
         }
     }
 }
