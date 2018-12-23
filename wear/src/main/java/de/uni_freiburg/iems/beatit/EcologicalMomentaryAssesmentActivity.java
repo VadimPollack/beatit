@@ -30,13 +30,13 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
     private Sensor mSensorAccelerometer;
     private FileOutputStream fileStream;
     private File file;
-    private SimpleDateFormat format;
+    private SimpleDateFormat formatTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ecological_momentary_assesment);
-        format = new SimpleDateFormat("HH:mm:ss");
+        formatTime = new SimpleDateFormat("HH:mm:ss");
 
         mTextView = (TextView) findViewById(R.id.text);
 
@@ -49,10 +49,13 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
         mSensorManager.registerListener(this, mSensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
         // Create an File in an external storage
+        SimpleDateFormat format = new SimpleDateFormat("dd_MM_YY_HH_mm_ss");
+        Calendar calendar = Calendar.getInstance();
+        String DayTime = format.format(calendar.getTime());
         String result = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(result)) {
             file = new File(Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_MOVIES), "beatit.txt");
+                    Environment.DIRECTORY_MOVIES), DayTime + ".txt");
             this.isStoragePermissionGranted();
             file.setWritable(true);
             Log.v("INFO", file.getAbsolutePath());
@@ -73,7 +76,7 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
     public void onSensorChanged(SensorEvent event) {
         // getting the device Time.
         Calendar calendar = Calendar.getInstance();
-        String time = format.format(calendar.getTime());
+        String time = formatTime.format(calendar.getTime());
         if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             String value = "" + time + "," +(double)event.values[0] + "," +
                     (double)event.values[1] + "," + (double)event.values[2] + "\n";
