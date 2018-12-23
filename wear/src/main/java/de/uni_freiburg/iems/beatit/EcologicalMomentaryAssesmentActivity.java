@@ -1,7 +1,6 @@
 package de.uni_freiburg.iems.beatit;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -9,7 +8,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.icu.text.SimpleDateFormat;
-import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -21,7 +19,6 @@ import android.widget.TextView;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.Calendar;
 
 public class EcologicalMomentaryAssesmentActivity extends WearableActivity
@@ -34,12 +31,12 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
     private FileOutputStream fileStream;
     private File file;
     private SimpleDateFormat format;
-    private Calendar calendar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ecological_momentary_assesment);
+        format = new SimpleDateFormat("HH:mm:ss");
 
         mTextView = (TextView) findViewById(R.id.text);
 
@@ -58,19 +55,15 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
                     Environment.DIRECTORY_MOVIES), "beatit.txt");
             this.isStoragePermissionGranted();
             file.setWritable(true);
-            mTextView.setText(file.getAbsolutePath());
+            Log.v("INFO", file.getAbsolutePath());
             try {
                 file.createNewFile();
             } catch (IOException e) {
-                //e.printStackTrace();
-                mTextView.setText(e.getMessage());
+
+                Log.v("INFO", e.getMessage());
             }
 
         }
-        // getting the device Time.
-        calendar = Calendar.getInstance();
-        format = new SimpleDateFormat("HH:mm:ss");
-
 
         // Enables Always-on
         setAmbientEnabled();
@@ -78,11 +71,13 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        // getting the device Time.
+        Calendar calendar = Calendar.getInstance();
+        String time = format.format(calendar.getTime());
         if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            String time = format.format(calendar.getTime());
-            String value = "" + time + ";" +(int)event.values[0] + ";" +
-                    (int)event.values[1] + ";" + (int)event.values[2] + "\n";
-            //mTextView.setText(value);
+            String value = "" + time + "," +(double)event.values[0] + "," +
+                    (double)event.values[1] + "," + (double)event.values[2] + "\n";
+            Log.v("INFO", value);
             writeToFile(value);
         }
         else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
@@ -99,19 +94,17 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(grantResults[0]== PackageManager.PERMISSION_GRANTED){
-           // Log.v(TAG,"Permission: "+permissions[0]+ "was "+grantResults[0]);
-            //resume tasks needing this permission
+            Log.v("INFO", "Permission");
         }
     }
 
     private void writeToFile (String line) {
         try {
             fileStream = new FileOutputStream(file, true);
-            //fileStream = openFileOutput("beatit.txt", MODE_APPEND);
             fileStream.write(line.getBytes());
             fileStream.close();
         } catch (Exception e) {
-           mTextView.setText(e.getMessage());
+            Log.v("INFO", e.getMessage());
         }
     }
     public  boolean isStoragePermissionGranted() {
@@ -119,16 +112,16 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                //Log.v(TAG,"Permission is granted");
+                Log.v("INFO","Permission is granted");
                 return true;
             } else {
-                //Log.v(TAG,"Permission is revoked");
+                Log.v("INFO","Permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 return false;
             }
         }
         else { //permission is automatically granted on sdk<23 upon installation
-            //Log.v(TAG,"Permission is granted");
+            Log.v("INFO","Permission is granted");
             return true;
         }
     }
