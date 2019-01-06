@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -76,6 +77,7 @@ public class EventDiary extends AppCompatActivity {
                     outputStream = new FileOutputStream(file,true);
                     outputStream.write((currentTime + "\n").getBytes());
                     outputStream.close();
+                    Log.v("INFO", file.getAbsolutePath());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
