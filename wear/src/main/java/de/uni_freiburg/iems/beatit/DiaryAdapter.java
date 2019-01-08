@@ -1,8 +1,9 @@
 package de.uni_freiburg.iems.beatit;
 
+import android.icu.text.DateFormat;
+import android.icu.text.SimpleDateFormat;
 import android.support.annotation.NonNull;
 import android.support.wear.widget.WearableRecyclerView;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.DiaryHolder> {
     private List<DiaryRecord> diary = new ArrayList<>();
@@ -25,8 +27,9 @@ public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.Diar
     @Override
     public void onBindViewHolder(@NonNull DiaryHolder holder, int position) {
         DiaryRecord currentRecord = diary.get(position);
-        holder.textViewTime.setText(currentRecord.startDateAndTime.toString());
-        holder.textViewDuration.setText(String.valueOf(currentRecord.duration));
+        DateFormat df = new SimpleDateFormat("EEEE, d MMM, HH:mm", Locale.ENGLISH);
+        holder.textViewTime.setText(df.format(currentRecord.startDateAndTime));
+        holder.textViewDuration.setText(String.valueOf((currentRecord.duration/ (1000*60))));
     }
 
     @Override

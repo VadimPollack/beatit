@@ -10,6 +10,7 @@ import java.util.List;
 public class DiaryViewModel extends AndroidViewModel {
     private DiaryDataManager dataManager;
     private LiveData<List<DiaryRecord>> diary;
+
     public DiaryViewModel(@NonNull Application application) {
         super(application);
         dataManager = new DiaryDataManager(application);
@@ -28,7 +29,7 @@ public class DiaryViewModel extends AndroidViewModel {
         dataManager.insert(record);
     }
 
-    public LiveData<List<DiaryRecord>> getDiary(){
-        return dataManager.getDiary();
+    public LiveData<List<DiaryRecord>> getDiary() {
+        return diary;
     }
 }
