@@ -5,11 +5,12 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.wear.ambient.AmbientModeSupport;
 import android.support.wear.widget.drawer.WearableNavigationDrawerView;
 import android.view.Window;
 
-public class MainActivity extends AppCompatActivity
-        implements WearableNavigationDrawerView.OnItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements
+        AmbientModeSupport.AmbientCallbackProvider, WearableNavigationDrawerView.OnItemSelectedListener {
 
     private enum NavigationSection {
         Diary(R.string.navigation_drawer_diary_title, R.drawable.ic_diary_black_24dp),
@@ -39,9 +40,11 @@ public class MainActivity extends AppCompatActivity
         getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
 
+        //Enable AmbientMode (Always-On)
+        AmbientModeSupport.attach(this);
+
         mWearableNavigationDrawer = (WearableNavigationDrawerView) findViewById(R.id.top_navigation_drawer);
         mWearableNavigationDrawer.setAdapter(new NavigationAdapter(this));
-
 
         final Fragment diaryFragment = DiaryView.newInstance();
         getSupportFragmentManager()
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity
                 .commit();
     }
 
+    //---------------------Navigation Drawer--------------------------------------
     private final class NavigationAdapter
             extends WearableNavigationDrawerView.WearableNavigationDrawerAdapter {
         private final Context mContext;
@@ -73,7 +77,6 @@ public class MainActivity extends AppCompatActivity
             return NavigationSection.values().length;
         }
     }
-
 
     @Override
     public void onItemSelected(int index) {
@@ -103,4 +106,26 @@ public class MainActivity extends AppCompatActivity
                 .commit();
     }
 
+    //----------------------Ambient Mode----------------------------------------
+    @Override
+    public AmbientModeSupport.AmbientCallback getAmbientCallback() {
+        return new MyAmbientCallback();
+    }
+
+    private class MyAmbientCallback extends AmbientModeSupport.AmbientCallback {
+        @Override
+        public void onEnterAmbient(Bundle ambientDetails) {
+            // Handle entering ambient mode
+        }
+
+        @Override
+        public void onExitAmbient() {
+            // Handle exiting ambient mode
+        }
+
+        @Override
+        public void onUpdateAmbient() {
+            // Update the content
+        }
+    }
 }
