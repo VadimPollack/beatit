@@ -59,11 +59,35 @@ public abstract class DiaryDatabase extends RoomDatabase {
             TimeZone.getDefault().getID(),
                     600000));
             cal.add(Calendar.HOUR_OF_DAY, -1);
-            cal.add(Calendar.MINUTE, 30);
+            cal.add(Calendar.MINUTE, 27);
             recordDao.insert(new DiaryRecord(
                     new Date(cal.getTimeInMillis()),
                     TimeZone.getDefault().getID(),
                     30000));
+            cal.add(Calendar.HOUR_OF_DAY, -2);
+            cal.add(Calendar.MINUTE, 30);
+            recordDao.insert(new DiaryRecord(
+                    new Date(cal.getTimeInMillis()),
+                    TimeZone.getDefault().getID(),
+                    490000));
+            cal.add(Calendar.DAY_OF_MONTH, -1);
+            cal.add(Calendar.MINUTE, 36);
+            recordDao.insert(new DiaryRecord(
+                    new Date(cal.getTimeInMillis()),
+                    TimeZone.getDefault().getID(),
+                    80000));
+            cal.add(Calendar.HOUR_OF_DAY, -10);
+            cal.add(Calendar.MINUTE, 14);
+            recordDao.insert(new DiaryRecord(
+                    new Date(cal.getTimeInMillis()),
+                    TimeZone.getDefault().getID(),
+                    110000));
+            cal.add(Calendar.MONTH, -1);
+            cal.add(Calendar.MINUTE, 30);
+            recordDao.insert(new DiaryRecord(
+                    new Date(cal.getTimeInMillis()),
+                    TimeZone.getDefault().getID(),
+                    260000));
             return null;
         }
     }
