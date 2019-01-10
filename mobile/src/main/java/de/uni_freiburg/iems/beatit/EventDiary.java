@@ -22,6 +22,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.Calendar;
+import java.util.Scanner;
 import java.util.TimeZone;
 
 public class EventDiary extends AppCompatActivity {
@@ -41,7 +42,25 @@ public class EventDiary extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
+        String dirName = "SmkFiles";
+        String fileName = "diary.txt";
+        File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), dirName);
+
+        if(!dir.exists()){ dir.mkdirs();}
+        File file = new File(dir, fileName);
         SmokeList = new LinkedList<>();
+        try{
+            Scanner s = new Scanner(file);
+
+            while (s.hasNext()){
+                SmokeList.add(s.nextLine());
+            }
+            s.close();
+        }
+        catch(Exception e){ e.printStackTrace();}
+
+
         RecyclerView rv = (RecyclerView) findViewById(R.id.smokeList);
         rv.setLayoutManager(new LinearLayoutManager(this));
         MyRecyclerViewAdapter adapter = new MyRecyclerViewAdapter(this, SmokeList);
@@ -64,13 +83,6 @@ public class EventDiary extends AppCompatActivity {
             //write file
             if(isExternalStorageWritable())
             {
-                String dirName = "SmkFiles";
-                String fileName = "diary.txt";
-                File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), dirName);
-
-                if(!dir.exists()){ dir.mkdirs();}
-                File file = new File(dir, fileName);
-
                 FileOutputStream outputStream;
                 try {
                     file.createNewFile();
