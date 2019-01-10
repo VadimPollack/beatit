@@ -13,8 +13,8 @@ public class MainActivity extends AppCompatActivity implements
         AmbientModeSupport.AmbientCallbackProvider, WearableNavigationDrawerView.OnItemSelectedListener {
 
     private enum NavigationSection {
+        MotionMonitor(R.string.navigation_drawer_monitoring_title, R.drawable.ic_monitoring_black_24dp),
         Diary(R.string.navigation_drawer_diary_title, R.drawable.ic_diary_black_24dp),
-        //Moon(R.string.moon_title, R.drawable.ic_moon_black_24dp),
         //Earth(R.string.earth_title, R.drawable.ic_earth_black_24dp),
         Settings(R.string.navigation_drawer_settings_title, R.drawable.ic_settings_black_24dp);
 
@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements
 
         mWearableNavigationDrawer = (WearableNavigationDrawerView) findViewById(R.id.top_navigation_drawer);
         mWearableNavigationDrawer.setAdapter(new NavigationAdapter(this));
+        mWearableNavigationDrawer.addOnItemSelectedListener(this);
 
         final Fragment diaryFragment = DiaryView.newInstance();
         getSupportFragmentManager()
@@ -90,6 +91,9 @@ public class MainActivity extends AppCompatActivity implements
 
         Fragment selectedFragment = null;
         switch (selectedSection) {
+            case MotionMonitor:
+                selectedFragment = MonitoringView.newInstance();
+                break;
             case Diary:
                 selectedFragment = DiaryView.newInstance();
                 break;
