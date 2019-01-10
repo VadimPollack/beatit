@@ -22,11 +22,11 @@ public class DiaryViewModel extends AndroidViewModel {
     }
 
     public void update(DiaryRecord record) {
-        dataManager.insert(record);
+        dataManager.update(record);
     }
 
     public void delete(DiaryRecord record) {
-        dataManager.insert(record);
+        dataManager.delete(record);
     }
 
     public LiveData<List<DiaryRecord>> getDiary() {
