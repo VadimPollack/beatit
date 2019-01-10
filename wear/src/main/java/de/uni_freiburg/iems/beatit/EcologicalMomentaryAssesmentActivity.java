@@ -68,8 +68,6 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
 
         }
 
-        // Enables Always-on
-        setAmbientEnabled();
     }
 
     @Override
