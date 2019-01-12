@@ -132,12 +132,12 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
                 + formatter.format( GYX) + " " + formatter.format( GYY) +" "
                 + formatter.format( GYZ) + " "
                 + formatter.format( MGX) + " " + formatter.format( MGY) + " "
-                + formatter.format( MGZ);
+                + formatter.format( MGZ) + "\n";
 
         String Label = "Null";
         Integer rand = ((int) (Math.random() * 10)) % 2;
-        if  (0 == 1) {
-            Label = "smokung";
+        if  (0 == rand) {
+            Label = "smoking";
         }
         value = Label + " " + value;
 
