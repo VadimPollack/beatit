@@ -15,7 +15,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.widget.TextView;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,6 +27,11 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
     private SensorManager mSensorManager;
     private Sensor mSensorGyroscope;
     private Sensor mSensorAccelerometer;
+
+    private Sensor mSensorMagneticField;
+    private Sensor mSensorPressure;
+    private Sensor mSensorRoatationVector;
+
     private FileOutputStream fileStream;
     private File file;
     private SimpleDateFormat formatTime;
@@ -42,11 +46,20 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
+        mSensorAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mSensorManager.registerListener(this, mSensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
         mSensorGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         mSensorManager.registerListener(this, mSensorGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
 
-        mSensorAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mSensorManager.registerListener(this, mSensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorMagneticField = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        mSensorManager.registerListener(this, mSensorMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
+
+        mSensorPressure = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+        mSensorManager.registerListener(this, mSensorPressure, SensorManager.SENSOR_DELAY_NORMAL);
+
+        mSensorRoatationVector = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        mSensorManager.registerListener(this, mSensorRoatationVector, SensorManager.SENSOR_DELAY_NORMAL);
 
         // Create an File in an external storage
         SimpleDateFormat format = new SimpleDateFormat("dd_MM_YY_HH_mm_ss");
@@ -75,6 +88,7 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
         // getting the device Time.
         Calendar calendar = Calendar.getInstance();
         String time = formatTime.format(calendar.getTime());
+        time = formatTime.format(event.timestamp);
         if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             String value = "" + time + "," +(double)event.values[0] + "," +
                     (double)event.values[1] + "," + (double)event.values[2] + "\n";
@@ -82,6 +96,15 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
             writeToFile(value);
         }
         else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+
+        }
+        else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+
+        }
+        else if (event.sensor.getType() == Sensor.TYPE_PRESSURE) {
+
+        }
+        else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
 
         }
     }
