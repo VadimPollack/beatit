@@ -7,6 +7,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.icu.text.DecimalFormat;
+import android.icu.text.NumberFormat;
 import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,6 +37,20 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
     private FileOutputStream fileStream;
     private File file;
     private SimpleDateFormat formatTime;
+
+    private double ACX;
+    private double ACY;
+    private double ACZ;
+
+    private double GYX;
+    private double GYY;
+    private double GYZ;
+
+    private double MGX;
+    private double MGY;
+    private double MGZ;
+
+    NumberFormat formatter = new DecimalFormat("#0.000000");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,16 +106,19 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
         String time = formatTime.format(calendar.getTime());
         time = formatTime.format(event.timestamp);
         if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            String value = "" + time + "," +(double)event.values[0] + "," +
-                    (double)event.values[1] + "," + (double)event.values[2] + "\n";
-            Log.v("INFO", value);
-            writeToFile(value);
+            ACY = (double)event.values[1];
+            ACZ = (double)event.values[2];
+            ACX = (double)event.values[0];
         }
         else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-
+            GYY = (double)event.values[1];
+            GYZ = (double)event.values[2];
+            GYX = (double)event.values[0];
         }
         else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-
+            MGY = (double)event.values[1];
+            MGZ = (double)event.values[2];
+            MGX = (double)event.values[0];
         }
         else if (event.sensor.getType() == Sensor.TYPE_PRESSURE) {
 
@@ -107,6 +126,25 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
         else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
 
         }
+
+        String value = "" + formatter.format( ACX) + " " + formatter.format( ACY) + " "
+                + formatter.format( ACZ) + " "
+                + formatter.format( GYX) + " " + formatter.format( GYY) +" "
+                + formatter.format( GYZ) + " "
+                + formatter.format( MGX) + " " + formatter.format( MGY) + " "
+                + formatter.format( MGZ);
+
+        String Label = "Null";
+        Integer rand = ((int) (Math.random() * 10)) % 2;
+        if  (0 == 1) {
+            Label = "smokung";
+        }
+        value = Label + " " + value;
+
+
+
+        Log.v("INFO", value);
+        writeToFile(value);
     }
 
     @Override
