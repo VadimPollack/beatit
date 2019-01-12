@@ -40,9 +40,9 @@ public class MonitoringView extends Fragment {
             //if(isMonitoringStarted){
             isChecked = !isChecked;
             if (isChecked) {
-                startStopButton.setImageResource(R.drawable.ic_stop_black_24dp);
+                startStopButton.setImageResource(R.drawable.ic_stop_white_24dp);
             } else {
-                startStopButton.setImageResource(R.drawable.ic_monitoring_black_24dp);
+                startStopButton.setImageResource(R.drawable.ic_monitoring_white_24dp);
             }
         });
     }
