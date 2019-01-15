@@ -3,6 +3,7 @@ package de.uni_freiburg.iems.beatit;
 import android.icu.text.DateFormat;
 import android.icu.text.SimpleDateFormat;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.RecyclerView;
 import android.support.wear.widget.WearableRecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import java.util.Locale;
 
 public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.DiaryHolder> {
     private List<DiaryRecord> diary = new ArrayList<>();
+    private OnItemClickListener listener;
 
     @NonNull
     @Override
@@ -29,7 +31,7 @@ public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.Diar
         DiaryRecord currentRecord = diary.get(position);
         DateFormat df = new SimpleDateFormat("EEEE, d MMM, HH:mm", Locale.ENGLISH);
         holder.textViewTime.setText(df.format(currentRecord.startDateAndTime));
-        holder.textViewDuration.setText(String.valueOf((currentRecord.duration/ (1000*60))));
+        holder.textViewDuration.setText(String.valueOf((currentRecord.duration / (1000 * 60))));
     }
 
     @Override
@@ -37,7 +39,7 @@ public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.Diar
         return diary.size();
     }
 
-    public void setDiary(List<DiaryRecord> diary){
+    public void setDiary(List<DiaryRecord> diary) {
         this.diary = diary;
         notifyDataSetChanged();
     }
@@ -50,6 +52,21 @@ public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.Diar
             super(itemView);
             textViewTime = itemView.findViewById(R.id.text_view_diary_item_time);
             textViewDuration = itemView.findViewById(R.id.text_view_diary_item_minutes);
+
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (listener != null && position != RecyclerView.NO_POSITION) {
+                    listener.onItemClick(diary.get(position));
+                }
+            });
         }
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(DiaryRecord record);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
     }
 }
