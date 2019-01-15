@@ -12,8 +12,8 @@ public class DiaryDataManager {
 
     public DiaryDataManager(Application application) {
         DiaryDatabase diaryDatabase = DiaryDatabase.getInstance(application);
-        DiaryRecordDao diaryRecordDao = diaryDatabase.diaryRecordDao();
-        diary = diaryRecordDao.getAllRecords();
+        recordDao = diaryDatabase.diaryRecordDao();
+        diary = recordDao.getAllRecords();
     }
 
     public void insert(DiaryRecord record) {
