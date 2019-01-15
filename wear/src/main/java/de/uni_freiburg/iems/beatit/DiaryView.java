@@ -1,5 +1,6 @@
 package de.uni_freiburg.iems.beatit;
 
+import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
@@ -8,7 +9,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.support.wear.widget.WearableLinearLayoutManager;
@@ -16,12 +16,13 @@ import android.support.wear.widget.WearableRecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.DatePicker;
 import android.widget.TimePicker;
 
 import java.util.List;
 
 public class DiaryView extends Fragment
-        implements TimePickerDialog.OnTimeSetListener {
+        implements TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
     private DiaryViewModel diaryViewModel;
     private DiaryRecord mSelectedRecord;
 
@@ -64,35 +65,69 @@ public class DiaryView extends Fragment
         //set listener for item clicked
         adapter.setOnItemClickListener(record -> {
             mSelectedRecord = record;
-            final Calendar c = Calendar.getInstance();
-            c.setTime(record.startDateAndTime);
-            int hours = c.get(Calendar.HOUR_OF_DAY);
-            int minutes = c.get(Calendar.MINUTE);
-
-            DialogFragment newFragment = new TimePickerFragment();
-            Bundle args = new Bundle();
-            args.putInt("hours", hours);
-            args.putInt("minutes", minutes);
-            newFragment.setArguments(args);
-            newFragment.show(getActivity().getSupportFragmentManager(), "timePicker");
+            showDatePickerDialog();
         });
 
         FloatingActionButton fab = getActivity().findViewById(R.id.diary_action_button);
-
         fab.setOnClickListener(v -> {
 
             // Toast.makeText(getActivity(), "yes", Toast.LENGTH_LONG).show();
         });
     }
 
+    //---------------------------------DatePickerDialog-----------------------------------
+    private void showDatePickerDialog() {
+        if (mSelectedRecord == null) return;
+        final Calendar c = Calendar.getInstance();
+        c.setTime(mSelectedRecord.startDateAndTime);
+        int year = c.get(Calendar.YEAR);
+        int month = c.get(Calendar.MONTH);
+        int dayOfMonth = c.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerFragment newFragment = new DatePickerFragment();
+        Bundle args = new Bundle();
+        args.putInt("year", year);
+        args.putInt("month", month);
+        args.putInt("dayOfMonth", dayOfMonth);
+        args.putString("title", "Select Date:");
+        newFragment.setArguments(args);
+        newFragment.setOnDateSetListener(this);
+        newFragment.show(getActivity().getSupportFragmentManager(), "datePicker");
+    }
+
+    @Override
+    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+        mSelectedRecord.startDateAndTime.setYear(year);
+        mSelectedRecord.startDateAndTime.setMonth(month);
+        mSelectedRecord.startDateAndTime.setDate(dayOfMonth);
+        diaryViewModel.update(mSelectedRecord);
+        showTimePickerDialog();
+    }
+
     //---------------------------------TimePickerDialog-----------------------------------
+    private void showTimePickerDialog() {
+        if (mSelectedRecord == null) return;
+        final Calendar c = Calendar.getInstance();
+        c.setTime(mSelectedRecord.startDateAndTime);
+        int hours = c.get(Calendar.HOUR_OF_DAY);
+        int minutes = c.get(Calendar.MINUTE);
+
+        TimePickerFragment newFragment = new TimePickerFragment();
+        Bundle args = new Bundle();
+        args.putInt("hours", hours);
+        args.putInt("minutes", minutes);
+        args.putString("title", "Select Time:");
+        newFragment.setArguments(args);
+        newFragment.setOnTimeSetListener(this);
+        newFragment.show(getActivity().getSupportFragmentManager(), "timePicker");
+    }
+
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         mSelectedRecord.startDateAndTime.setHours(hourOfDay);
         mSelectedRecord.startDateAndTime.setMinutes(minute);
         diaryViewModel.update(mSelectedRecord);
     }
-
 
 
     private class CustomScrollingLayoutCallback extends WearableLinearLayoutManager.LayoutCallback {
