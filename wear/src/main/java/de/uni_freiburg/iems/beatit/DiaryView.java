@@ -54,12 +54,9 @@ public class DiaryView extends Fragment
         recyclerView.setAdapter(adapter);
 
         diaryViewModel = ViewModelProviders.of(this).get(DiaryViewModel.class);
-        diaryViewModel.getDiary().observe(this, new Observer<List<DiaryRecord>>() {
-            @Override
-            public void onChanged(@Nullable List<DiaryRecord> diaryRecords) {
-                // update RecyclerView
-                adapter.setDiary(diaryRecords);
-            }
+        diaryViewModel.getDiary().observe(this, diaryRecords -> {
+            // update RecyclerView
+            adapter.setDiary(diaryRecords);
         });
 
         //set listener for item clicked
@@ -97,9 +94,10 @@ public class DiaryView extends Fragment
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        mSelectedRecord.startDateAndTime.setYear(year);
-        mSelectedRecord.startDateAndTime.setMonth(month);
-        mSelectedRecord.startDateAndTime.setDate(dayOfMonth);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(mSelectedRecord.startDateAndTime);
+        cal.set(year,month,dayOfMonth);
+        mSelectedRecord.startDateAndTime.setTime(cal.getTimeInMillis());
         diaryViewModel.update(mSelectedRecord);
         showTimePickerDialog();
     }
@@ -124,8 +122,11 @@ public class DiaryView extends Fragment
 
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        mSelectedRecord.startDateAndTime.setHours(hourOfDay);
-        mSelectedRecord.startDateAndTime.setMinutes(minute);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(mSelectedRecord.startDateAndTime);
+        cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        cal.set(Calendar.MINUTE, minute);
+        mSelectedRecord.startDateAndTime.setTime(cal.getTimeInMillis());
         diaryViewModel.update(mSelectedRecord);
     }
 
