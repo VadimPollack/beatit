@@ -1,18 +1,19 @@
 package de.uni_freiburg.iems.beatit;
 
 import android.Manifest;
+import android.app.Application;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.icu.text.DecimalFormat;
+import android.icu.text.NumberFormat;
 import android.icu.text.SimpleDateFormat;
-import android.os.Build;
-import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.ActivityCompat;
-import android.support.wearable.activity.WearableActivity;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.TextView;
 import java.io.File;
@@ -20,7 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
 
-public class EcologicalMomentaryAssesmentActivity extends WearableActivity
+public class EcologicalMomentaryAssesmentActivity
         implements SensorEventListener {
 
     private TextView mTextView;
@@ -36,15 +37,27 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
     private File file;
     private SimpleDateFormat formatTime;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ecological_momentary_assesment);
+    private double ACX;
+    private double ACY;
+    private double ACZ;
+
+    private double GYX;
+    private double GYY;
+    private double GYZ;
+
+    private double MGX;
+    private double MGY;
+    private double MGZ;
+    private Application context;
+    private NumberFormat formatter = new DecimalFormat("#0.000000");
+
+    public EcologicalMomentaryAssesmentActivity(@NonNull Application context)
+    {
+        this.context = context;
         formatTime = new SimpleDateFormat("HH:mm:ss");
 
-        mTextView = (TextView) findViewById(R.id.text);
 
-        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mSensorManager = (SensorManager) this.context.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
 
         mSensorAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mSensorManager.registerListener(this, mSensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
@@ -69,7 +82,7 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
         if (Environment.MEDIA_MOUNTED.equals(result)) {
             file = new File(Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_MOVIES), DayTime + ".txt");
-            this.isStoragePermissionGranted();
+            //this.isStoragePermissionGranted();
             file.setWritable(true);
             Log.v("INFO", file.getAbsolutePath());
             try {
@@ -90,16 +103,19 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
         String time = formatTime.format(calendar.getTime());
         time = formatTime.format(event.timestamp);
         if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            String value = "" + time + "," +(double)event.values[0] + "," +
-                    (double)event.values[1] + "," + (double)event.values[2] + "\n";
-            Log.v("INFO", value);
-            writeToFile(value);
+            ACY = (double)event.values[1];
+            ACZ = (double)event.values[2];
+            ACX = (double)event.values[0];
         }
         else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-
+            GYY = (double)event.values[1];
+            GYZ = (double)event.values[2];
+            GYX = (double)event.values[0];
         }
         else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-
+            MGY = (double)event.values[1];
+            MGZ = (double)event.values[2];
+            MGX = (double)event.values[0];
         }
         else if (event.sensor.getType() == Sensor.TYPE_PRESSURE) {
 
@@ -107,6 +123,25 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
         else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
 
         }
+
+        String value = "" + formatter.format( ACX) + " " + formatter.format( ACY) + " "
+                + formatter.format( ACZ) + " "
+                + formatter.format( GYX) + " " + formatter.format( GYY) +" "
+                + formatter.format( GYZ) + " "
+                + formatter.format( MGX) + " " + formatter.format( MGY) + " "
+                + formatter.format( MGZ) + "\n";
+
+        String Label = "Null";
+        Integer rand = ((int) (Math.random() * 10)) % 2;
+        if  (0 == rand) {
+            Label = "smoking";
+        }
+        value = Label + " " + value;
+
+
+
+        Log.v("INFO", value);
+        writeToFile(value);
     }
 
     @Override
@@ -114,13 +149,13 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
 
     }
 
-    @Override
+ /*   @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(grantResults[0]== PackageManager.PERMISSION_GRANTED){
             Log.v("INFO", "Permission");
         }
-    }
+    }*/
 
     private void writeToFile (String line) {
         try {
@@ -131,10 +166,10 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
             Log.v("INFO", e.getMessage());
         }
     }
-    public  boolean isStoragePermissionGranted() {
+/*    public  boolean isStoragePermissionGranted() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            if (context.getApplicationContext().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
                 Log.v("INFO","Permission is granted");
                 return true;
@@ -148,5 +183,5 @@ public class EcologicalMomentaryAssesmentActivity extends WearableActivity
             Log.v("INFO","Permission is granted");
             return true;
         }
-    }
+    }*/
 }
