@@ -1,6 +1,5 @@
 package de.uni_freiburg.iems.beatit;
 
-import android.app.DatePickerDialog;
 import android.icu.text.DateFormat;
 import android.icu.text.SimpleDateFormat;
 import android.support.annotation.NonNull;
@@ -44,6 +43,10 @@ public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.Diar
     public void setDiary(List<DiaryRecord> diary) {
         this.diary = diary;
         notifyDataSetChanged();
+    }
+
+    public DiaryRecord getDiaryRecordAt(int position) {
+        return diary.get(position);
     }
 
     class DiaryHolder extends WearableRecyclerView.ViewHolder {
