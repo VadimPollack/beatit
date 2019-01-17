@@ -2,7 +2,6 @@ package de.uni_freiburg.iems.beatit;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.icu.util.Calendar;
 import android.os.Bundle;
@@ -19,10 +18,12 @@ import android.view.ViewGroup;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
 
-import java.util.List;
+import java.util.Date;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public class DiaryView extends Fragment
-        implements TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
+        implements TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener, NumberPickerFragment.onNumberSetListener {
     private DiaryViewModel diaryViewModel;
     private DiaryRecord mSelectedRecord;
 
@@ -59,17 +60,43 @@ public class DiaryView extends Fragment
             adapter.setDiary(diaryRecords);
         });
 
-        //set listener for item clicked
-        adapter.setOnItemClickListener(record -> {
+        //set listener for date and time clicked
+        adapter.setOnDateClickListener(record -> {
             mSelectedRecord = record;
             showDatePickerDialog();
+        });
+        adapter.setOnDurationClickListener(record -> {
+            mSelectedRecord = record;
+            showDurationPickerDialog();
         });
 
         FloatingActionButton fab = getActivity().findViewById(R.id.diary_action_button);
         fab.setOnClickListener(v -> {
-
-            // Toast.makeText(getActivity(), "yes", Toast.LENGTH_LONG).show();
+            Date currentDate = Calendar.getInstance().getTime();
+            String timeZone = TimeZone.getDefault().getID();
+            int duration = (int) TimeUnit.MINUTES.toMillis(3);
+            diaryViewModel.insert(new DiaryRecord(currentDate, timeZone, duration));
         });
+    }
+
+    //---------------------------------DurationPickerDialog-----------------------------------
+    private void showDurationPickerDialog() {
+        if (mSelectedRecord == null) return;
+        NumberPickerFragment newFragment = new NumberPickerFragment();
+        Bundle args = new Bundle();
+        args.putInt("count", (int) TimeUnit.MILLISECONDS.toMinutes((mSelectedRecord.duration)));
+        args.putString("title", "Select Duration:");
+        args.putInt("min", 1);
+        args.putInt("max", 60);
+        newFragment.setArguments(args);
+        newFragment.setOnNumberSetListener(this);
+        newFragment.show(getActivity().getSupportFragmentManager(), "durationPicker");
+    }
+
+    @Override
+    public void onNumberSet(int number) {
+        mSelectedRecord.duration = (int) TimeUnit.MINUTES.toMillis((long) number);
+        diaryViewModel.update(mSelectedRecord);
     }
 
     //---------------------------------DatePickerDialog-----------------------------------
@@ -96,7 +123,7 @@ public class DiaryView extends Fragment
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(mSelectedRecord.startDateAndTime);
-        cal.set(year,month,dayOfMonth);
+        cal.set(year, month, dayOfMonth);
         mSelectedRecord.startDateAndTime.setTime(cal.getTimeInMillis());
         diaryViewModel.update(mSelectedRecord);
         showTimePickerDialog();
@@ -129,7 +156,6 @@ public class DiaryView extends Fragment
         mSelectedRecord.startDateAndTime.setTime(cal.getTimeInMillis());
         diaryViewModel.update(mSelectedRecord);
     }
-
 
     private class CustomScrollingLayoutCallback extends WearableLinearLayoutManager.LayoutCallback {
 

@@ -1,5 +1,6 @@
 package de.uni_freiburg.iems.beatit;
 
+import android.app.DatePickerDialog;
 import android.icu.text.DateFormat;
 import android.icu.text.SimpleDateFormat;
 import android.support.annotation.NonNull;
@@ -16,7 +17,8 @@ import java.util.Locale;
 
 public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.DiaryHolder> {
     private List<DiaryRecord> diary = new ArrayList<>();
-    private OnItemClickListener listener;
+    private OnDateClickListener onDateClickListener;
+    private OnDurationClickListener onDurationClickListener;
 
     @NonNull
     @Override
@@ -52,21 +54,35 @@ public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.Diar
             super(itemView);
             textViewTime = itemView.findViewById(R.id.text_view_diary_item_time);
             textViewDuration = itemView.findViewById(R.id.text_view_diary_item_minutes);
-
-            itemView.setOnClickListener(v -> {
+            textViewDuration.setOnClickListener(l -> {
                 int position = getAdapterPosition();
-                if (listener != null && position != RecyclerView.NO_POSITION) {
-                    listener.onItemClick(diary.get(position));
+                if (onDurationClickListener != null && position != RecyclerView.NO_POSITION) {
+                    onDurationClickListener.onDurationClick(diary.get(position));
+                }
+            });
+
+            textViewTime.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (onDateClickListener != null && position != RecyclerView.NO_POSITION) {
+                    onDateClickListener.onDateClick(diary.get(position));
                 }
             });
         }
     }
 
-    public interface OnItemClickListener {
-        void onItemClick(DiaryRecord record);
+    public interface OnDateClickListener {
+        void onDateClick(DiaryRecord record);
     }
 
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        this.listener = listener;
+    public interface OnDurationClickListener {
+        void onDurationClick(DiaryRecord record);
+    }
+
+    public void setOnDateClickListener(OnDateClickListener listener) {
+        this.onDateClickListener = listener;
+    }
+
+    public void setOnDurationClickListener(OnDurationClickListener listener) {
+        this.onDurationClickListener = listener;
     }
 }
