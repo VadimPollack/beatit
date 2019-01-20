@@ -15,6 +15,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.wear.ambient.AmbientModeSupport;
 import android.support.wear.widget.drawer.WearableNavigationDrawerView;
@@ -88,11 +89,10 @@ public class MainActivity extends AppCompatActivity implements
         // Build intent for "Yes" action button
         Intent yesIntent = new Intent(this, MainActivity.class);
         yesIntent.setAction(SmokeEventDetectedIntentService.ACTION_YES);
-
         PendingIntent yesPendingIntent = PendingIntent.getService(this, 0, yesIntent, 0);
         NotificationCompat.Action yesAction =
                 new NotificationCompat.Action.Builder(
-                        R.drawable.ic_diary_black_24dp,
+                        R.drawable.ic_cigarette_black_24dp,
                         "Yes",
                         yesPendingIntent)
                         .build();
@@ -100,11 +100,10 @@ public class MainActivity extends AppCompatActivity implements
         // Build intent for "No" action button
         Intent noIntent = new Intent(this, MainActivity.class);
         noIntent.setAction(SmokeEventDetectedIntentService.ACTION_NO);
-
         PendingIntent noPendingIntent = PendingIntent.getService(this, 0, noIntent, 0);
         NotificationCompat.Action noAction =
                 new NotificationCompat.Action.Builder(
-                        R.drawable.ic_stop_white_24dp,
+                        R.drawable.ic_crossed_cigarette_black_24dp,
                         "No",
                         noPendingIntent)
                         .build();
@@ -112,9 +111,10 @@ public class MainActivity extends AppCompatActivity implements
         //Building notification layout
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, createNotificationChannel(this))
-                        .setSmallIcon(R.drawable.ic_diary_black_24dp)
+                        .setSmallIcon(R.drawable.ic_cigarette_black_24dp)
                         .setContentTitle("Smoking?")
                         .setContentText("We detected that you're smoking. Is this correct?")
+                        .setColor(ContextCompat.getColor(getApplicationContext() , R.color.colorPrimaryDark))
                         //.setContentIntent(viewPendingIntent)
                         .addAction(yesAction)
                         .addAction(noAction);
