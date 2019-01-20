@@ -37,7 +37,8 @@ public class MonitoringView extends Fragment {
         monitoringViewModel = ViewModelProviders.of(this).get(MonitoringViewModel.class);
         startStopButton.setOnClickListener(view -> monitoringViewModel.startMonitoring());
         monitoringViewModel.getIsMonitoringStarted().observe(this, isMonitoringStarted -> {
-            //if(isMonitoringStarted){
+            MainActivityViewModel vm = ViewModelProviders.of(getActivity()).get(MainActivityViewModel.class);
+            vm.onSmokingEventDetected();
             isChecked = !isChecked;
             if (isChecked) {
                 startStopButton.setImageResource(R.drawable.ic_stop_white_24dp);
