@@ -1,13 +1,13 @@
 package de.uni_freiburg.iems.beatit;
 
 import android.Manifest;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,6 +21,7 @@ import android.support.wear.ambient.AmbientModeSupport;
 import android.support.wear.widget.drawer.WearableNavigationDrawerView;
 import android.view.Window;
 
+import de.uni_freiburg.iems.beatit.notifications.NotificationUtil;
 import de.uni_freiburg.iems.beatit.notifications.SmokeEventDetectedIntentService;
 
 public class MainActivity extends AppCompatActivity implements
@@ -66,8 +67,9 @@ public class MainActivity extends AppCompatActivity implements
 
         //initialize notification manager
         MainActivityViewModel viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
-        viewModel.setOnSmokingEventDetectedListener(() -> {
-            showOnSmokingEventDetectedNotification();
+        viewModel.setOnSmokingEventDetectedListener((record) -> {
+            showOnSmokingEventDetectedNotification(record);
+            //generateBigTextStyleNotification();
         });
 
 
@@ -78,18 +80,166 @@ public class MainActivity extends AppCompatActivity implements
                 .commit();
     }
 
+    private void generateBigTextStyleNotification() {
+
+       // Main steps for building a BIG_TEXT_STYLE notification:
+        //      0. Get your data
+        //      1. Create/Retrieve Notification Channel for O and beyond devices (26+)
+        //      2. Build the BIG_TEXT_STYLE
+        //      3. Set up main Intent for notification
+        //      4. Create additional Actions for the Notification
+        //      5. Build and issue the notification
+
+        // 0. Get your data (everything unique per Notification).
+//        MockDatabase.BigTextStyleReminderAppData bigTextStyleReminderAppData =
+//                MockDatabase.getBigTextStyleData();
+
+        // 1. Create/Retrieve Notification Channel for O and beyond devices (26+).
+        String notificationChannelId =
+                NotificationUtil.createNotificationChannel(this);
+
+        // 2. Build the BIG_TEXT_STYLE
+        NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle()
+                // Overrides ContentText in the big form of the template.
+                .bigText("BigText")
+                // Overrides ContentTitle in the big form of the template.
+                .setBigContentTitle("BigContentTitle")
+                // Summary line after the detail section in the big form of the template
+                // Note: To improve readability, don't overload the user with info. If Summary Text
+                // doesn't add critical information, you should skip it.
+                .setSummaryText("BigSummary");
+
+
+        // 3. Set up main Intent for notification.
+        Intent mainIntent = new Intent(this, MainActivity.class);
+
+        PendingIntent mainPendingIntent =
+                PendingIntent.getActivity(
+                        this,
+                        0,
+                        mainIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+
+
+        // 4. Create additional Actions (Intents) for the Notification.
+
+        // In our case, we create two additional actions: a Snooze action and a Dismiss action.
+
+        // Snooze Action.
+        Intent snoozeIntent = new Intent(this, SmokeEventDetectedIntentService.class);
+        snoozeIntent.setAction(SmokeEventDetectedIntentService.ACTION_YES);
+
+        PendingIntent snoozePendingIntent = PendingIntent.getService(this, 1, snoozeIntent, 0);
+        NotificationCompat.Action snoozeAction =
+                new NotificationCompat.Action.Builder(
+                        R.drawable.ic_cigarette_black_24dp,
+                        "Snooze",
+                        snoozePendingIntent)
+                        .build();
+
+        // Dismiss Action.
+        Intent dismissIntent = new Intent(this, SmokeEventDetectedIntentService.class);
+        dismissIntent.setAction(SmokeEventDetectedIntentService.ACTION_NO);
+
+        PendingIntent dismissPendingIntent = PendingIntent.getService(this, 2, dismissIntent, 0);
+        NotificationCompat.Action dismissAction =
+                new NotificationCompat.Action.Builder(
+                        R.drawable.ic_diary_black_24dp,
+                        "Dismiss",
+                        dismissPendingIntent)
+                        .build();
+
+        // 5. Build and issue the notification.
+
+        // Because we want this to be a new notification (not updating a previous notification), we
+        // create a new Builder. Later, we use the same global builder to get back the notification
+        // we built here for the snooze action, that is, canceling the notification and relaunching
+        // it several seconds later.
+
+        // Notification Channel Id is ignored for Android pre O (26).
+        NotificationCompat.Builder notificationCompatBuilder =
+                new NotificationCompat.Builder(
+                        getApplicationContext(), notificationChannelId);
+
+        //GlobalNotificationBuilder.setNotificationCompatBuilderInstance(notificationCompatBuilder);
+
+        notificationCompatBuilder
+                // BIG_TEXT_STYLE sets title and content.
+                .setStyle(bigTextStyle)
+                .setContentTitle("ContentTitle")
+                .setContentText("getContentText")
+                .setSmallIcon(R.drawable.action_item_icon_background)
+                .setLargeIcon(BitmapFactory.decodeResource(
+                        getResources(),
+                        R.drawable.accept_deny_dialog_positive_bg))
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                // Set primary color (important for Wear 2.0 Notifications).
+                .setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary))
+
+                .setCategory(Notification.CATEGORY_REMINDER)
+
+                // Sets priority for 25 and below. For 26 and above, 'priority' is deprecated for
+                // 'importance' which is set in the NotificationChannel. The integers representing
+                // 'priority' are different from 'importance', so make sure you don't mix them.
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+                // Sets lock-screen visibility for 25 and below. For 26 and above, lock screen
+                // visibility is set in the NotificationChannel.
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+
+                // Adds additional actions specified above.
+                .addAction(snoozeAction)
+                .addAction(dismissAction);
+
+        /* REPLICATE_NOTIFICATION_STYLE_CODE:
+         * You can replicate Notification Style functionality on Wear 2.0 (24+) by not setting the
+         * main content intent, that is, skipping the call setContentIntent(). However, you need to
+         * still allow the user to open the native Wear app from the Notification itself, so you
+         * add an action to launch the app.
+         */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+
+            // Enables launching app in Wear 2.0 while keeping the old Notification Style behavior.
+            NotificationCompat.Action mainAction = new NotificationCompat.Action.Builder(
+                    R.drawable.ic_diary_black_24dp,
+                    "Open",
+                    mainPendingIntent)
+                    .build();
+
+            notificationCompatBuilder.addAction(mainAction);
+
+        } else {
+            // Wear 1.+ still functions the same, so we set the main content intent.
+            notificationCompatBuilder.setContentIntent(mainPendingIntent);
+        }
+
+
+        Notification notification = notificationCompatBuilder.build();
+        NotificationManagerCompat mNotificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
+        mNotificationManagerCompat.notify(NOTIFICATION_ID, notification);
+
+        // Close app to demonstrate notification in steam.
+        finish();
+    }
+
     //----------------------------SmokingEventDetectedNotificatoin------------------------
-    private void showOnSmokingEventDetectedNotification() {
+    private void showOnSmokingEventDetectedNotification(DiaryRecord record) {
 
         // Build intent for notification content
         Intent viewIntent = new Intent(this, MainActivity.class);
         PendingIntent viewPendingIntent =
-                PendingIntent.getActivity(this, 0, viewIntent, 0);
+                PendingIntent.getActivity(
+                        this,
+                        0,
+                        viewIntent,
+                        0); // nachschauen!
 
         // Build intent for "Yes" action button
-        Intent yesIntent = new Intent(this, MainActivity.class);
+        Intent yesIntent = new Intent(this, SmokeEventDetectedIntentService.class);
         yesIntent.setAction(SmokeEventDetectedIntentService.ACTION_YES);
-        PendingIntent yesPendingIntent = PendingIntent.getService(this, 0, yesIntent, 0);
+        yesIntent.putExtra("ID", record.recordId);
+        PendingIntent yesPendingIntent = PendingIntent.getService(this, 0, yesIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Action yesAction =
                 new NotificationCompat.Action.Builder(
                         R.drawable.ic_cigarette_black_24dp,
@@ -98,9 +248,10 @@ public class MainActivity extends AppCompatActivity implements
                         .build();
 
         // Build intent for "No" action button
-        Intent noIntent = new Intent(this, MainActivity.class);
+        Intent noIntent = new Intent(this, SmokeEventDetectedIntentService.class);
+        yesIntent.putExtra("ID", record.recordId);
         noIntent.setAction(SmokeEventDetectedIntentService.ACTION_NO);
-        PendingIntent noPendingIntent = PendingIntent.getService(this, 0, noIntent, 0);
+        PendingIntent noPendingIntent = PendingIntent.getService(this, 0, noIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Action noAction =
                 new NotificationCompat.Action.Builder(
                         R.drawable.ic_crossed_cigarette_black_24dp,
@@ -108,45 +259,48 @@ public class MainActivity extends AppCompatActivity implements
                         noPendingIntent)
                         .build();
 
+        // 2. Build the BIG_TEXT_STYLE
+        NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle()
+                // Overrides ContentText in the big form of the template.
+                .bigText("@ " + record.startDateAndTime +" ?")
+                // Overrides ContentTitle in the big form of the template.
+                .setBigContentTitle("Did you smoke ")
+                // Summary line after the detail section in the big form of the template
+                // Note: To improve readability, don't overload the user with info. If Summary Text
+                // doesn't add critical information, you should skip it.
+                .setSummaryText("Summary");
+
         //Building notification layout
         NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(this, createNotificationChannel(this))
+                new NotificationCompat.Builder(this, NotificationUtil.createNotificationChannel(this))
+                        .setStyle(bigTextStyle)
                         .setSmallIcon(R.drawable.ic_cigarette_black_24dp)
-                        .setContentTitle("Smoking?")
-                        .setContentText("We detected that you're smoking. Is this correct?")
-                        .setColor(ContextCompat.getColor(getApplicationContext() , R.color.colorPrimaryDark))
+                        //.setContentTitle("Smoking?")
+                        //.setContentText("We detected that you're smoking. Is this correct?")
+                        .setDefaults(NotificationCompat.DEFAULT_ALL)
+                        .setCategory(Notification.CATEGORY_REMINDER)
+                        .setPriority(NotificationCompat.PRIORITY_MAX)
+                        .setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark))
+                        .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
                         //.setContentIntent(viewPendingIntent)
                         .addAction(yesAction)
                         .addAction(noAction);
+
+        // Enables launching app in Wear 2.0 while keeping the old Notification Style behavior.
+        NotificationCompat.Action mainAction = new NotificationCompat.Action.Builder(
+                R.drawable.open_on_phone,
+                "Open",
+                viewPendingIntent)
+                .build();
+
+        notificationBuilder.addAction(mainAction);
 
         // instance of the NotificationManager service
         NotificationManagerCompat notificationManager =
                 NotificationManagerCompat.from(this);
 
         // Build the notification and notify it using notification manager.
-        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
-    }
-
-    public static String createNotificationChannel(Context context) {
-
-        // NotificationChannels are required for Notifications on O (API 26) and above.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String channelId = "SMK_DTC";
-            // Initializes NotificationChannel.
-            NotificationChannel notificationChannel =
-                    new NotificationChannel(channelId, "SmokeEventDetectedNotification", NotificationManager.IMPORTANCE_DEFAULT);
-            // Adds NotificationChannel to system. Attempting to create an existing notification
-            // channel with its original values performs no operation, so it's safe to perform the
-            // below sequence.
-            NotificationManager notificationManager =
-                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.createNotificationChannel(notificationChannel);
-
-            return channelId;
-        } else {
-            // Returns null for pre-O (26) devices.
-            return null;
-        }
+        notificationManager.notify((int)record.recordId, notificationBuilder.build());
     }
 
     //---------------------Navigation Drawer--------------------------------------

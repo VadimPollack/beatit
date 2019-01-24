@@ -23,4 +23,7 @@ public interface DiaryRecordDao {
 
     @Query("SELECT * FROM diary_table ORDER BY start_date_and_time DESC")
     LiveData<List<DiaryRecord>> getAllRecords();
+
+    @Query("SELECT * FROM diary_table WHERE record_id = :id ")
+    LiveData<DiaryRecord> getRecordById(long id);
 }

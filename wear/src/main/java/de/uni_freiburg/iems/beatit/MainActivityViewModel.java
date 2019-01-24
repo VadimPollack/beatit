@@ -11,8 +11,8 @@ public class MainActivityViewModel extends AndroidViewModel {
         super(application);
     }
 
-    public void onSmokingEventDetected(){
-        mListener.onSmokingEventDetected();
+    public void onSmokingEventDetected(DiaryRecord newRecord){
+        mListener.onSmokingEventDetected(newRecord);
     }
 
     public void setOnSmokingEventDetectedListener(OnSmokingEventDetectedListener listener) {
@@ -20,6 +20,6 @@ public class MainActivityViewModel extends AndroidViewModel {
     }
 
     public interface OnSmokingEventDetectedListener {
-        void onSmokingEventDetected();
+        void onSmokingEventDetected(DiaryRecord record);
     }
 }

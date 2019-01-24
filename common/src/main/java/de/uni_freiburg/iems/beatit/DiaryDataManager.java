@@ -34,6 +34,10 @@ public class DiaryDataManager {
         return diary;
     }
 
+    public LiveData<DiaryRecord> getRecordById(long id) {
+        return recordDao.getRecordById(id);
+    }
+
     private static class InsertNoteAsyncTask extends AsyncTask<DiaryRecord, Void, Void> {
         private DiaryRecordDao diaryRecordDao;
 

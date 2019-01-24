@@ -2,14 +2,15 @@ package de.uni_freiburg.iems.beatit.notifications;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
-import de.uni_freiburg.iems.beatit.MainActivity;
+import de.uni_freiburg.iems.beatit.DiaryDataManager;
+import de.uni_freiburg.iems.beatit.DiaryRecord;
 
 /**
- * Asynchronously handles snooze and dismiss actions for reminder app (and active Notification).
- * Notification for for reminder app uses BigTextStyle.
+ * Asynchronously handles yes and no actions for smoking detected notification.
  */
 public class SmokeEventDetectedIntentService extends IntentService {
 
@@ -28,44 +29,28 @@ public class SmokeEventDetectedIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Log.d(TAG, "onHandleIntent(): " + intent);
 
+        Long longExtra = intent.getLongExtra("ID", 0);
+        int id = 0;
+        DiaryDataManager dataManager = new DiaryDataManager(getApplication());
+        DiaryRecord currentRecord = dataManager.getRecordById(id).getValue();
+
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_YES.equals(action)) {
-                handleActionYes();
+                currentRecord.userLabel = DiaryRecord.Label.SMOKING;
             } else if (ACTION_NO.equals(action)) {
-                handleActionNo();
+                currentRecord.userLabel = DiaryRecord.Label.NOT_SMOKING;
             }
         }
+
+        dataManager.update(currentRecord);
+        dismissNotification(id);
     }
 
-    /**
-     * Handles action Dismiss in the provided background thread.
-
-     private void handleActionDismiss() {
-     Log.d(TAG, "handleActionDismiss()");
-
-     NotificationManagerCompat notificationManagerCompat =
-     NotificationManagerCompat.from(getApplicationContext());
-     notificationManagerCompat.cancel(MainActivity.NOTIFICATION_ID);
-     }*/
-
-    /**
-     * Handles action Snooze in the provided background thread.
-     */
-    private void handleActionYes() {
-        Log.d(TAG, "handleActionYes()");
+    private void dismissNotification(int id) {
+        Log.d(TAG, "dismissNotification(" + id + ")");
         NotificationManagerCompat notificationManagerCompat =
                 NotificationManagerCompat.from(getApplicationContext());
-        notificationManagerCompat.cancel(MainActivity.NOTIFICATION_ID);
-    }
-
-    /**
-     * Handles action Snooze in the provided background thread.
-     */
-    private void handleActionNo() {
-        Log.d(TAG, "handleActionNo()");
-        NotificationManagerCompat notificationManagerCompat =
-                NotificationManagerCompat.from(getApplicationContext());
-        notificationManagerCompat.cancel(MainActivity.NOTIFICATION_ID);
+        notificationManagerCompat.cancel(id);
     }
 }
