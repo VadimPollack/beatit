@@ -2,6 +2,7 @@ package de.uni_freiburg.iems.beatit;
 
 import android.Manifest;
 import android.app.Application;
+import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -24,6 +25,9 @@ import java.util.Calendar;
 
 public class SensorDataManager
         implements SensorEventListener {
+
+    public MutableLiveData<Boolean> isMonitoringStarted;
+
 
     private SensorManager mSensorManager;
     private Sensor mSensorGyroscope;
@@ -54,6 +58,8 @@ public class SensorDataManager
     public SensorDataManager(@NonNull Application context) {
         this.context = context;
         formatTime = new SimpleDateFormat("HH:mm:ss");
+        isMonitoringStarted = new MutableLiveData<>();
+        isMonitoringStarted.setValue(false);
     }
 
     /**
@@ -96,10 +102,17 @@ public class SensorDataManager
 
                 Log.v("INFO", e.getMessage());
             }
-
         }
+        isMonitoringStarted.setValue(true);
         return false;
     }
+
+    public boolean stopSensorMonitoring() {
+        mSensorManager.unregisterListener(this);
+        isMonitoringStarted.setValue(false);
+        return true;
+    }
+
 
     @Override
     public void onSensorChanged(SensorEvent event) {
