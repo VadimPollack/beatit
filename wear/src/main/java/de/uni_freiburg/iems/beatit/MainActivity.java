@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.icu.text.DateFormat;
+import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -20,6 +22,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.wear.ambient.AmbientModeSupport;
 import android.support.wear.widget.drawer.WearableNavigationDrawerView;
 import android.view.Window;
+
+import java.util.Locale;
 
 import de.uni_freiburg.iems.beatit.notifications.NotificationUtil;
 import de.uni_freiburg.iems.beatit.notifications.SmokeEventDetectedIntentService;
@@ -260,9 +264,10 @@ public class MainActivity extends AppCompatActivity implements
                         .build();
 
         // 2. Build the BIG_TEXT_STYLE
+        DateFormat df = new SimpleDateFormat("EEEE, d MMM, HH:mm", Locale.ENGLISH);
         NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle()
                 // Overrides ContentText in the big form of the template.
-                .bigText("@ " + record.startDateAndTime +" ?")
+                .bigText("@ " + df.format(record.startDateAndTime) +" ?")
                 // Overrides ContentTitle in the big form of the template.
                 .setBigContentTitle("Did you smoke ")
                 // Summary line after the detail section in the big form of the template
