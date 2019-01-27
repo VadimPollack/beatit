@@ -84,6 +84,10 @@ public class DiaryView extends Fragment
             mSelectedRecord = record;
             showDurationPickerDialog();
         });
+        adapter.setOnLabelClickListener(record -> {
+            mSelectedRecord = record;
+            rotateLabel();
+        });
 
         FloatingActionButton fab = getActivity().findViewById(R.id.diary_action_button);
         fab.setOnClickListener(v -> {
@@ -92,6 +96,21 @@ public class DiaryView extends Fragment
             int duration = (int) TimeUnit.MINUTES.toMillis(3);
             diaryViewModel.insert(new DiaryRecord(currentDate, timeZone, duration));
         });
+    }
+
+    private void rotateLabel(){
+        switch (mSelectedRecord.userLabel){
+            case UNLABELED:
+                mSelectedRecord.userLabel = DiaryRecord.Label.NOT_SMOKING;
+                break;
+            case NOT_SMOKING:
+                mSelectedRecord.userLabel = DiaryRecord.Label.SMOKING;
+                break;
+            case SMOKING:
+                mSelectedRecord.userLabel = DiaryRecord.Label.UNLABELED;
+                break;
+        }
+        diaryViewModel.update(mSelectedRecord);
     }
 
     //---------------------------------DurationPickerDialog-----------------------------------

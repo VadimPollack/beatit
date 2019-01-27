@@ -8,6 +8,7 @@ import android.support.wear.widget.WearableRecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.Diar
     private List<DiaryRecord> diary = new ArrayList<>();
     private OnDateClickListener onDateClickListener;
     private OnDurationClickListener onDurationClickListener;
+    private OnLabelClickListener onLabelClickListener;
 
     @NonNull
     @Override
@@ -33,6 +35,20 @@ public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.Diar
         DateFormat df = new SimpleDateFormat("EEEE, d MMM, HH:mm", Locale.ENGLISH);
         holder.textViewTime.setText(df.format(currentRecord.startDateAndTime));
         holder.textViewDuration.setText(String.valueOf((currentRecord.duration / (1000 * 60))));
+        holder.imageViewLabel.setImageResource(chooseImageSource(currentRecord.userLabel));
+    }
+
+    private int chooseImageSource(DiaryRecord.Label userLabel) {
+        switch (userLabel) {
+            case UNLABELED:
+                return R.drawable.ic_diary_label_unlabeled_24dp;
+            case NOT_SMOKING:
+                return R.drawable.ic_diary_label_not_smoking_24dp;
+            case SMOKING:
+                return R.drawable.ic_diary_label_smoking_24dp;
+            default:
+                return 0;
+        }
     }
 
     @Override
@@ -52,11 +68,19 @@ public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.Diar
     class DiaryHolder extends WearableRecyclerView.ViewHolder {
         private TextView textViewTime;
         private TextView textViewDuration;
+        private ImageView imageViewLabel;
 
         public DiaryHolder(View itemView) {
             super(itemView);
             textViewTime = itemView.findViewById(R.id.text_view_diary_item_time);
             textViewDuration = itemView.findViewById(R.id.text_view_diary_item_minutes);
+            imageViewLabel = itemView.findViewById(R.id.image_view_diary_label);
+            imageViewLabel.setOnClickListener(l -> {
+                int position = getAdapterPosition();
+                if (onDurationClickListener != null && position != RecyclerView.NO_POSITION) {
+                    onLabelClickListener.onLabelClick(diary.get(position));
+                }
+            });
             textViewDuration.setOnClickListener(l -> {
                 int position = getAdapterPosition();
                 if (onDurationClickListener != null && position != RecyclerView.NO_POSITION) {
@@ -81,6 +105,10 @@ public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.Diar
         void onDurationClick(DiaryRecord record);
     }
 
+    public interface OnLabelClickListener {
+        void onLabelClick(DiaryRecord record);
+    }
+
     public void setOnDateClickListener(OnDateClickListener listener) {
         this.onDateClickListener = listener;
     }
@@ -88,4 +116,10 @@ public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.Diar
     public void setOnDurationClickListener(OnDurationClickListener listener) {
         this.onDurationClickListener = listener;
     }
+
+    public void setOnLabelClickListener(OnLabelClickListener listener) {
+        this.onLabelClickListener = listener;
+    }
+
+
 }
