@@ -9,17 +9,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.TextView;
-
-import java.util.Calendar;
-import java.util.TimeZone;
 
 public class MonitoringView extends Fragment {
 
     private MonitoringViewModel monitoringViewModel;
     private ImageButton startStopButton;
-    private TextView startTimeTextView;
-    private Boolean isChecked = false;
 
     public static MonitoringView newInstance() {
         return new MonitoringView();
@@ -30,7 +24,6 @@ public class MonitoringView extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.monitoring_view, container, false);
         startStopButton = rootView.findViewById(R.id.monitoring_start_stop_button);
-        startTimeTextView = rootView.findViewById(R.id.monitoring_start_time_text_view);
         return rootView;
     }
 
@@ -38,17 +31,27 @@ public class MonitoringView extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         monitoringViewModel = ViewModelProviders.of(this).get(MonitoringViewModel.class);
-        startStopButton.setOnClickListener(view -> monitoringViewModel.startMonitoring());
+        startStopButton.setOnClickListener(view -> onStartStopButtonClicked());
         monitoringViewModel.getIsMonitoringStarted().observe(this, isMonitoringStarted -> {
-            MainActivityViewModel vm = ViewModelProviders.of(getActivity()).get(MainActivityViewModel.class);
-            vm.onSmokingEventDetected(new DiaryRecord(Calendar.getInstance().getTime(),TimeZone.getDefault().getID(),180000));
-            isChecked = !isChecked;
-            if (isChecked) {
-                startStopButton.setImageResource(R.drawable.ic_stop_white_24dp);
-            } else {
-                startStopButton.setImageResource(R.drawable.ic_monitoring_white_24dp);
-            }
+            if (isMonitoringStarted == null) return;
+            startStopButton.setImageResource(chooseImageResource(isMonitoringStarted));
         });
+    }
+
+    private void onStartStopButtonClicked() {
+        Boolean isStarted = monitoringViewModel.getIsMonitoringStarted().getValue();
+        if (isStarted == null) return;
+        if (isStarted)
+            monitoringViewModel.stopMonitoring();
+        else
+            monitoringViewModel.startMonitoring();
+    }
+
+    private int chooseImageResource(Boolean isStarted) {
+        if (isStarted)
+            return R.drawable.ic_stop_white_24dp;
+        else
+            return R.drawable.ic_monitoring_white_24dp;
     }
 
 
