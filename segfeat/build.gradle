@@ -4,6 +4,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'info.picocli:picocli:3.8.0'
     implementation 'com.opencsv:opencsv:4.4'
+    implementation files('src/libs/weka.jar')
 }
 
 jar {
