@@ -11,10 +11,12 @@ public class MonitoringViewModel extends AndroidViewModel {
     private MutableLiveData<Boolean> isMonitoringStarted;
 
     private MutableLiveData<String> startTime;
+    private EcologicalMomentaryAssesmentActivity Sensor;
 
     public MonitoringViewModel(@NonNull Application application) {
         super(application);
         isMonitoringStarted = new MutableLiveData<>();
+        Sensor = new EcologicalMomentaryAssesmentActivity(application);
     }
 
     public LiveData<Boolean> getIsMonitoringStarted() {
