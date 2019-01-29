@@ -104,7 +104,7 @@ public class SensorDataManager
             }
         }
         isMonitoringStarted.setValue(true);
-        return false;
+        return true;
     }
 
     public boolean stopSensorMonitoring() {
