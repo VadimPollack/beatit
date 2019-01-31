@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.icu.text.DateFormat;
 import android.icu.text.SimpleDateFormat;
+import android.icu.util.TimeZone;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -23,6 +24,8 @@ import android.support.wear.ambient.AmbientModeSupport;
 import android.support.wear.widget.drawer.WearableNavigationDrawerView;
 import android.view.Window;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 import de.uni_freiburg.iems.beatit.notifications.NotificationUtil;
@@ -32,6 +35,8 @@ public class MainActivity extends AppCompatActivity implements
         AmbientModeSupport.AmbientCallbackProvider, WearableNavigationDrawerView.OnItemSelectedListener {
 
     public static final int NOTIFICATION_ID = 1;
+
+    private MainActivityViewModel viewModel;
 
     private enum NavigationSection {
         MotionMonitor(R.string.navigation_drawer_monitoring_title, R.drawable.ic_monitoring_black_24dp),
@@ -48,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private static final NavigationSection DEFAULT_SECTION = NavigationSection.Diary;
+    private static final NavigationSection DEFAULT_SECTION = NavigationSection.MotionMonitor;
 
     private NavigationSection mCurrentSection = DEFAULT_SECTION;
 
@@ -70,17 +75,17 @@ public class MainActivity extends AppCompatActivity implements
         mWearableNavigationDrawer.addOnItemSelectedListener(this);
 
         //initialize notification manager
-        MainActivityViewModel viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
+        viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         viewModel.setOnSmokingEventDetectedListener((record) -> {
             showOnSmokingEventDetectedNotification(record);
             //generateBigTextStyleNotification();
         });
 
 
-        final Fragment diaryFragment = DiaryView.newInstance();
+        final Fragment startFragment = MonitoringView.newInstance();
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_container, diaryFragment)
+                .replace(R.id.fragment_container, startFragment)
                 .commit();
     }
 
@@ -352,6 +357,11 @@ public class MainActivity extends AppCompatActivity implements
                 selectedFragment = DiaryView.newInstance();
                 break;
             case Settings:
+                Calendar cal = Calendar.getInstance();
+                viewModel.onSmokingEventDetected(new DiaryRecord(
+                        new Date(cal.getTimeInMillis()),
+                        TimeZone.getDefault().getID(),
+                        30000));
                 break;
             default:
                 selectedFragment = DiaryView.newInstance();
