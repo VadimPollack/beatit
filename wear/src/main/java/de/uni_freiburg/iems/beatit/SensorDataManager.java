@@ -52,10 +52,10 @@ public class SensorDataManager
     private double MGX;
     private double MGY;
     private double MGZ;
-    private Application context;
+    private Context context;
     private NumberFormat formatter = new DecimalFormat("#0.000000");
 
-    public SensorDataManager(@NonNull Application context) {
+    public SensorDataManager(@NonNull Context context) {
         this.context = context;
         formatTime = new SimpleDateFormat("HH:mm:ss");
         isMonitoringStarted = new MutableLiveData<>();
