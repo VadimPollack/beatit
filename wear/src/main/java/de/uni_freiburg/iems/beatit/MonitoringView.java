@@ -8,7 +8,13 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.Spinner;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MonitoringView extends Fragment {
 
@@ -24,6 +30,19 @@ public class MonitoringView extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.monitoring_view, container, false);
         startStopButton = rootView.findViewById(R.id.monitoring_start_stop_button);
+        Spinner spinner = rootView.findViewById(R.id.monitoring_model_spinner);
+        List<String> list = new ArrayList<>();
+        list.add("Model1");
+        list.add("Model2");
+        list.add("Model3");
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this.getContext(),
+                android.R.layout.simple_spinner_item, list.toArray(new String[0]));
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setOnItemClickListener((parent, view, position, id) -> {
+            // ToDo implement model change
+        });
+
+        spinner.setAdapter(dataAdapter);
         return rootView;
     }
 
