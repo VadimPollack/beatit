@@ -2,12 +2,10 @@ package de.uni_freiburg.iems.beatit;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.DoubleSummaryStatistics;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
 
 /**
  *  This class can handle the segmentation and feature extraction from inertial data
@@ -17,14 +15,14 @@ import java.util.stream.Stream;
  *  It can also be used from the command line, when reading character-separated-values (CSV)
  *  data.
  */
-public class SegFeat {
+public class SegFeatWear {
 
     public static class Builder {
         
-        private SegFeat self;
+        private SegFeatWear self;
 
         public Builder() {
-            self = new SegFeat();
+            self = new SegFeatWear();
         }
 
         /**
@@ -54,7 +52,7 @@ public class SegFeat {
          *
          * @return SegFeat object.
          */
-        public SegFeat build() throws Exception {
+        public SegFeatWear build() throws Exception {
 
             if (self.mWindowLength <= 0)
                 throw new Exception("window length must be larger than zero, see setWindowSize()");
@@ -63,7 +61,6 @@ public class SegFeat {
                 throw new Exception("sample size must be larger than zero, see setSampleSize()");
 
             self.mInputBuffer  = new double[self.mSampleSize][self.mWindowLength];
-            self.mLabelBuffer = new String[self.mWindowLength];
             self.mOutputBuffer = new LinkedList<>();
             return self;
         }
@@ -75,9 +72,9 @@ public class SegFeat {
 
     protected LinkedList<FeatureVector> mOutputBuffer;
     protected double[][] mInputBuffer;
-    protected String[] mLabelBuffer;
 
-    public void write(String label, double[] array) throws Exception {
+
+    public void write(double[] array) throws Exception {
         if (array.length != mSampleSize)
             throw new Exception(
                     String.format("sample of wrong size (%d != %d)", array.length, mSampleSize));
@@ -86,7 +83,6 @@ public class SegFeat {
          *  do the segmentation here, i.e. collect enough samples until there are at least
          *  mWindowLength samples collected.
          */
-        mLabelBuffer[mCursor] = label;
         for (int i=0; i<array.length; i++)
             mInputBuffer[i][mCursor] = array[i];
 
@@ -102,8 +98,8 @@ public class SegFeat {
     }
 
     /**
-     * calculate mean, max, and min for each input dimension. Addtionally extracts the most common
-     * label for each sample. Store in the output buffer, that can be accessed by the read()
+     * calculate mean, max, and min for each input dimension.
+     * Store in the output buffer, that can be accessed by the read()
      * method.
      */
     private void calcFeatures() {
@@ -115,16 +111,7 @@ public class SegFeat {
               z -> DoubleStream.of(z.getAverage(), z.getMax(), z.getMin()))
             .toArray();
 
-        String mostCommonLabel =
-            Arrays.stream(mLabelBuffer)
-            .collect(Collectors.groupingBy(w -> w, Collectors.counting()))
-            .entrySet()
-            .stream()
-            .max(Comparator.comparing(Map.Entry::getValue))
-            .get()
-            .getKey();
-
-        mOutputBuffer.add(new FeatureVector(mostCommonLabel, featureVector));
+        mOutputBuffer.add(new FeatureVector(featureVector));
     }
 
     public FeatureVector read() {
@@ -132,11 +119,9 @@ public class SegFeat {
     }
 
     public class FeatureVector {
-        public final String mLabel;
         public final double[] mVector;
 
-        public FeatureVector(String label, double[] vector) {
-            mLabel = label;
+        public FeatureVector( double[] vector) {
             mVector = vector;
         }
     }
