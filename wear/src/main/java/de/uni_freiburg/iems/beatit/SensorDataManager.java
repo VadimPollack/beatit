@@ -2,6 +2,7 @@ package de.uni_freiburg.iems.beatit;
 
 import android.Manifest;
 import android.app.Application;
+import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -16,15 +17,18 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.TextView;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
 
-public class EcologicalMomentaryAssesmentActivity
+public class SensorDataManager
         implements SensorEventListener {
 
-    private TextView mTextView;
+    public MutableLiveData<Boolean> isMonitoringStarted;
+
+
     private SensorManager mSensorManager;
     private Sensor mSensorGyroscope;
     private Sensor mSensorAccelerometer;
@@ -51,12 +55,19 @@ public class EcologicalMomentaryAssesmentActivity
     private Application context;
     private NumberFormat formatter = new DecimalFormat("#0.000000");
 
-    public EcologicalMomentaryAssesmentActivity(@NonNull Application context)
-    {
+    public SensorDataManager(@NonNull Application context) {
         this.context = context;
         formatTime = new SimpleDateFormat("HH:mm:ss");
+        isMonitoringStarted = new MutableLiveData<>();
+        isMonitoringStarted.setValue(false);
+    }
 
-
+    /**
+     * Starts recording of sensor data
+     *
+     * @return true if start was successful.
+     */
+    public boolean startSensorMonitoring() {
         mSensorManager = (SensorManager) this.context.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
 
         mSensorAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -91,10 +102,17 @@ public class EcologicalMomentaryAssesmentActivity
 
                 Log.v("INFO", e.getMessage());
             }
-
         }
-
+        isMonitoringStarted.setValue(true);
+        return false;
     }
+
+    public boolean stopSensorMonitoring() {
+        mSensorManager.unregisterListener(this);
+        isMonitoringStarted.setValue(false);
+        return true;
+    }
+
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -102,42 +120,37 @@ public class EcologicalMomentaryAssesmentActivity
         Calendar calendar = Calendar.getInstance();
         String time = formatTime.format(calendar.getTime());
         time = formatTime.format(event.timestamp);
-        if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            ACY = (double)event.values[1];
-            ACZ = (double)event.values[2];
-            ACX = (double)event.values[0];
-        }
-        else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-            GYY = (double)event.values[1];
-            GYZ = (double)event.values[2];
-            GYX = (double)event.values[0];
-        }
-        else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-            MGY = (double)event.values[1];
-            MGZ = (double)event.values[2];
-            MGX = (double)event.values[0];
-        }
-        else if (event.sensor.getType() == Sensor.TYPE_PRESSURE) {
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            ACY = (double) event.values[1];
+            ACZ = (double) event.values[2];
+            ACX = (double) event.values[0];
+        } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+            GYY = (double) event.values[1];
+            GYZ = (double) event.values[2];
+            GYX = (double) event.values[0];
+        } else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+            MGY = (double) event.values[1];
+            MGZ = (double) event.values[2];
+            MGX = (double) event.values[0];
+        } else if (event.sensor.getType() == Sensor.TYPE_PRESSURE) {
 
-        }
-        else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+        } else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
 
         }
 
-        String value = "" + formatter.format( ACX) + " " + formatter.format( ACY) + " "
-                + formatter.format( ACZ) + " "
-                + formatter.format( GYX) + " " + formatter.format( GYY) +" "
-                + formatter.format( GYZ) + " "
-                + formatter.format( MGX) + " " + formatter.format( MGY) + " "
-                + formatter.format( MGZ) + "\n";
+        String value = "" + formatter.format(ACX) + " " + formatter.format(ACY) + " "
+                + formatter.format(ACZ) + " "
+                + formatter.format(GYX) + " " + formatter.format(GYY) + " "
+                + formatter.format(GYZ) + " "
+                + formatter.format(MGX) + " " + formatter.format(MGY) + " "
+                + formatter.format(MGZ) + "\n";
 
         String Label = "Null";
         Integer rand = ((int) (Math.random() * 10)) % 2;
-        if  (0 == rand) {
+        if (0 == rand) {
             Label = "smoking";
         }
         value = Label + " " + value;
-
 
 
         Log.v("INFO", value);
@@ -157,7 +170,7 @@ public class EcologicalMomentaryAssesmentActivity
         }
     }*/
 
-    private void writeToFile (String line) {
+    private void writeToFile(String line) {
         try {
             fileStream = new FileOutputStream(file, true);
             fileStream.write(line.getBytes());

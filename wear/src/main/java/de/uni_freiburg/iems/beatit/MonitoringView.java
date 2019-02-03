@@ -11,6 +11,9 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import java.util.Calendar;
+import java.util.TimeZone;
+
 public class MonitoringView extends Fragment {
 
     private MonitoringViewModel monitoringViewModel;
@@ -37,12 +40,13 @@ public class MonitoringView extends Fragment {
         monitoringViewModel = ViewModelProviders.of(this).get(MonitoringViewModel.class);
         startStopButton.setOnClickListener(view -> monitoringViewModel.startMonitoring());
         monitoringViewModel.getIsMonitoringStarted().observe(this, isMonitoringStarted -> {
-            //if(isMonitoringStarted){
+            MainActivityViewModel vm = ViewModelProviders.of(getActivity()).get(MainActivityViewModel.class);
+            vm.onSmokingEventDetected(new DiaryRecord(Calendar.getInstance().getTime(),TimeZone.getDefault().getID(),180000));
             isChecked = !isChecked;
             if (isChecked) {
-                startStopButton.setImageResource(R.drawable.ic_stop_black_24dp);
+                startStopButton.setImageResource(R.drawable.ic_stop_white_24dp);
             } else {
-                startStopButton.setImageResource(R.drawable.ic_monitoring_black_24dp);
+                startStopButton.setImageResource(R.drawable.ic_monitoring_white_24dp);
             }
         });
     }
