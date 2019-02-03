@@ -69,19 +69,19 @@ public class SensorDataManager
         mSensorManager = (SensorManager) this.context.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
 
         mSensorAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mSensorManager.registerListener(this, mSensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mSensorAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
 
         mSensorGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        mSensorManager.registerListener(this, mSensorGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mSensorGyroscope, SensorManager.SENSOR_DELAY_FASTEST);
 
         mSensorMagneticField = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        mSensorManager.registerListener(this, mSensorMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mSensorMagneticField, SensorManager.SENSOR_DELAY_FASTEST);
 
         mSensorPressure = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
-        mSensorManager.registerListener(this, mSensorPressure, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mSensorPressure, SensorManager.SENSOR_DELAY_FASTEST);
 
         mSensorRoatationVector = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        mSensorManager.registerListener(this, mSensorRoatationVector, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mSensorRoatationVector, SensorManager.SENSOR_DELAY_FASTEST);
 
         // Create an File in an external storage
         SimpleDateFormat format = new SimpleDateFormat("dd_MM_YY_HH_mm_ss");
@@ -117,6 +117,7 @@ public class SensorDataManager
         Calendar calendar = Calendar.getInstance();
         String time = formatTime.format(calendar.getTime());
         time = formatTime.format(event.timestamp);
+
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             ACY = (double) event.values[1];
             ACZ = (double) event.values[2];
@@ -129,11 +130,11 @@ public class SensorDataManager
             MGY = (double) event.values[1];
             MGZ = (double) event.values[2];
             MGX = (double) event.values[0];
-        } else if (event.sensor.getType() == Sensor.TYPE_PRESSURE) {
+        } /*else if (event.sensor.getType() == Sensor.TYPE_PRESSURE) {
 
         } else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
 
-        }
+        }*/
 
         String value = "" + formatter.format(ACX) + " " + formatter.format(ACY) + " "
                 + formatter.format(ACZ) + " "

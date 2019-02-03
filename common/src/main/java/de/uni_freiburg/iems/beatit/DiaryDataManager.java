@@ -34,6 +34,11 @@ public class DiaryDataManager {
         return diary;
     }
 
+    public List<DiaryRecord> getDiarySync() {
+
+        return recordDao.getDiarySyncRecord();
+    }
+
     public LiveData<DiaryRecord> getRecordById(long id) {
         return recordDao.getRecordById(id);
     }
