@@ -2,7 +2,6 @@ package de.uni_freiburg.iems.beatit.notifications;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.os.Bundle;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
@@ -29,10 +28,10 @@ public class SmokeEventDetectedIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Log.d(TAG, "onHandleIntent(): " + intent);
 
-        Long longExtra = intent.getLongExtra("ID", 0);
-        int id = 0;
-        DiaryDataManager dataManager = new DiaryDataManager(getApplication());
-        DiaryRecord currentRecord = dataManager.getRecordById(id).getValue();
+        long id = intent.getLongExtra("ID", 0);
+        DiaryDataManager dataManager = DiaryDataManager.getInstance(getApplication());
+        DiaryRecord currentRecord = dataManager.getRecordById(id);
+
 
         if (intent != null) {
             final String action = intent.getAction();
@@ -44,7 +43,7 @@ public class SmokeEventDetectedIntentService extends IntentService {
         }
 
         dataManager.update(currentRecord);
-        dismissNotification(id);
+        dismissNotification((int)id);
     }
 
     private void dismissNotification(int id) {

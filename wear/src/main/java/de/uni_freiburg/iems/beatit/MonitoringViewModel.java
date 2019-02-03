@@ -11,7 +11,7 @@ public class MonitoringViewModel extends AndroidViewModel {
 
     public MonitoringViewModel(@NonNull Application application) {
         super(application);
-        mSensorDataManager = SensorDataManagerInstanceProvider.getInstance(application);
+        mSensorDataManager = SensorDataManager.getInstance(application);
     }
 
     public LiveData<Boolean> getIsMonitoringStarted() {
