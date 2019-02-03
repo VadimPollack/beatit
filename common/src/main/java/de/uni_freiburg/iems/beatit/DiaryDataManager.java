@@ -12,8 +12,8 @@ public class DiaryDataManager {
 
     public DiaryDataManager(Application application) {
         DiaryDatabase diaryDatabase = DiaryDatabase.getInstance(application);
-        DiaryRecordDao diaryRecordDao = diaryDatabase.diaryRecordDao();
-        diary = diaryRecordDao.getAllRecords();
+        recordDao = diaryDatabase.diaryRecordDao();
+        diary = recordDao.getAllRecords();
     }
 
     public void insert(DiaryRecord record) {
@@ -32,6 +32,10 @@ public class DiaryDataManager {
 
     public LiveData<List<DiaryRecord>> getDiary() {
         return diary;
+    }
+
+    public LiveData<DiaryRecord> getRecordById(long id) {
+        return recordDao.getRecordById(id);
     }
 
     private static class InsertNoteAsyncTask extends AsyncTask<DiaryRecord, Void, Void> {

@@ -1,0 +1,15 @@
+----
+Dateien vom Emulator auf PC kopieren
+----
+- adb als root starten: "adb root"
+- Kommando "adb pull /storage/emulated/0/Movies c:\Temp"
+
+
+-----
+Kommando "adb shell" erzeugt Fehler 'adb error: more than one device'
+-----
+"C:\Users\MBH>adb devices -l
+"List of devices attached
+"0123456789ABCDEF       device product:ZEN model:ZEN device:ZEN
+"0123456789ABCDEF       device product:full_gs702c model:M757 device:gs702c
+Dann mit model Nummer in die Shell: "adb -s model:M757"
