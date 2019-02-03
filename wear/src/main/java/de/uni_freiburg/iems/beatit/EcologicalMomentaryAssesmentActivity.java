@@ -1,10 +1,8 @@
 package de.uni_freiburg.iems.beatit;
 
-import android.Manifest;
+
 import android.app.Application;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -89,7 +87,7 @@ public class EcologicalMomentaryAssesmentActivity
                 file.createNewFile();
             } catch (IOException e) {
 
-                Log.v("INFO", e.getMessage());
+                //Log.v("INFO", e.getMessage());
             }
 
         }
@@ -136,11 +134,11 @@ public class EcologicalMomentaryAssesmentActivity
         if  (0 == rand) {
             Label = "smoking";
         }
-        value = Label + " " + value;
+        //value = Label + " " + value;
 
 
 
-        Log.v("INFO", value);
+        //Log.v("INFO", value);
         writeToFile(value);
     }
 

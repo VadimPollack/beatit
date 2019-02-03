@@ -12,11 +12,14 @@ public class MonitoringViewModel extends AndroidViewModel {
 
     private MutableLiveData<String> startTime;
     private EcologicalMomentaryAssesmentActivity Sensor;
+    private ConnectionClass Connector;
 
     public MonitoringViewModel(@NonNull Application application) {
         super(application);
         isMonitoringStarted = new MutableLiveData<>();
         Sensor = new EcologicalMomentaryAssesmentActivity(application);
+        Connector = new ConnectionClass(application);
+        //Connector.sendData();
     }
 
     public LiveData<Boolean> getIsMonitoringStarted() {
@@ -28,5 +31,6 @@ public class MonitoringViewModel extends AndroidViewModel {
 
     public void startMonitoring() {
         isMonitoringStarted.setValue(true);
+        Connector.sendData();
     }
 }

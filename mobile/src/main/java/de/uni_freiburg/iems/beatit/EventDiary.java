@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -16,6 +17,22 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.wearable.CapabilityClient;
+import com.google.android.gms.wearable.CapabilityInfo;
+import com.google.android.gms.wearable.DataClient;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.MessageClient;
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
+import com.google.android.gms.wearable.Wearable;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DateFormat;
@@ -25,10 +42,16 @@ import java.util.Calendar;
 import java.util.Scanner;
 import java.util.TimeZone;
 
-public class EventDiary extends AppCompatActivity {
+
+
+public class EventDiary extends AppCompatActivity implements
+        DataClient.OnDataChangedListener,
+        MessageClient.OnMessageReceivedListener,
+        CapabilityClient.OnCapabilityChangedListener{
 
     LinkedList<String> SmokeList;
 
+    private DataClient mDataclient;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -46,6 +69,12 @@ public class EventDiary extends AppCompatActivity {
         String dirName = "SmkFiles";
         String fileName = "diary.txt";
         File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), dirName);
+
+
+        mDataclient = Wearable.getDataClient(this);
+        mDataclient.addListener(this);
+
+        Log.v("Connect","Constructor");
 
         if(!dir.exists()){ dir.mkdirs();}
         File file = new File(dir, fileName);
@@ -101,6 +130,7 @@ public class EventDiary extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_event_diary, menu);
+        sendData();
         return true;
     }
 
@@ -115,6 +145,7 @@ public class EventDiary extends AppCompatActivity {
         if (id == R.id.action_settings) {
             return true;
         }
+        sendData();
         return super.onOptionsItemSelected(item);
     }
 
@@ -146,5 +177,54 @@ public class EventDiary extends AppCompatActivity {
                     REQUEST_EXTERNAL_STORAGE
             );
         }
+    }
+
+    @Override
+    public void onDataChanged(@NonNull DataEventBuffer dataEventBuffer) {
+        Log.v("Mobile", "DataChanged");
+        for (DataEvent event : dataEventBuffer) {
+            if (event.getType() == DataEvent.TYPE_CHANGED) {
+                // DataItem changed
+                DataItem item = event.getDataItem();
+                if (item.getUri().getPath().compareTo("/count1") == 0) {
+                    Log.v("Mobile", "DataReceived");
+                    DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+                    Log.v("Mobile", "DataReceived");
+                }
+            } else if (event.getType() == DataEvent.TYPE_DELETED) {
+                // DataItem deleted
+            }
+        }
+    }
+
+    private int count = 100;
+    public void sendData() {
+        final String COUNT_KEY = "com.example.key.count";
+
+
+        PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/count1");
+        putDataMapReq.getDataMap().putInt(COUNT_KEY, count++);
+        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+        Task<DataItem> putDataTask = Wearable.getDataClient(this).putDataItem(putDataReq);
+
+        putDataTask.addOnSuccessListener(
+
+                new OnSuccessListener<DataItem>() {
+                    @Override
+                    public void onSuccess(DataItem dataItem) {
+                        Log.v("Mobile", "DataSend");
+                    }
+                });
+        Log.v("Mobile", "DataSend");
+    }
+
+    @Override
+    public void onCapabilityChanged(@NonNull CapabilityInfo capabilityInfo) {
+
+    }
+
+    @Override
+    public void onMessageReceived(@NonNull MessageEvent messageEvent) {
+
     }
 }
