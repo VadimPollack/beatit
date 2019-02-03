@@ -49,12 +49,12 @@ public abstract class DiaryDatabase extends RoomDatabase {
         @Override
         protected Void doInBackground(Void... voids) {
             Calendar cal = Calendar.getInstance();
-            recordDao.insert(new DiaryRecord(
+            recordDao.insert(new DiaryRecord(DiaryRecord.Label.SMOKING,
                     new Date(cal.getTimeInMillis()),
                     TimeZone.getDefault().getID(),
                     300000));
             cal.add(Calendar.HOUR_OF_DAY, -1);
-            recordDao.insert(new DiaryRecord(
+            recordDao.insert(new DiaryRecord(DiaryRecord.Label.NOT_SMOKING,
                     new Date(cal.getTimeInMillis()),
             TimeZone.getDefault().getID(),
                     600000));
