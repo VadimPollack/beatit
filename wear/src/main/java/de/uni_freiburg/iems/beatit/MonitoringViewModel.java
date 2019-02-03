@@ -8,10 +8,14 @@ import android.support.annotation.NonNull;
 public class MonitoringViewModel extends AndroidViewModel {
 
     private SensorDataManager mSensorDataManager;
+    private ConnectionClass mDataSync;
+    private DiaryDataManager mdataManager;
 
     public MonitoringViewModel(@NonNull Application application) {
         super(application);
         mSensorDataManager = SensorDataManager.getInstance(application);
+        mDataSync = new ConnectionClass(application);
+        mdataManager = DiaryDataManager.getInstance(application);
     }
 
     public LiveData<Boolean> getIsMonitoringStarted() {
@@ -19,6 +23,7 @@ public class MonitoringViewModel extends AndroidViewModel {
     }
 
     public void startMonitoring() {
+        mDataSync.sendData(mdataManager);
         if (mSensorDataManager.isMonitoringStarted.getValue()) return;
         mSensorDataManager.startSensorMonitoring();
 

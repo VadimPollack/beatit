@@ -17,7 +17,6 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.TextView;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -31,7 +30,6 @@ public class SensorDataManager
     public MutableLiveData<Boolean> isMonitoringStarted;
     
     private List<OnSmokingEventDetectedListener> onSmokingEventDetectedListeners;
-
 
     private SensorManager mSensorManager;
     private Sensor mSensorGyroscope;
@@ -126,7 +124,6 @@ public class SensorDataManager
         isMonitoringStarted.setValue(false);
         return true;
     }
-
 
     @Override
     public void onSensorChanged(SensorEvent event) {
