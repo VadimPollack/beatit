@@ -2,9 +2,11 @@ package de.uni_freiburg.iems.beatit;
 
 import android.Manifest;
 import android.app.Activity;
+import android.arch.lifecycle.LiveData;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -53,10 +55,13 @@ public class EventDiary extends AppCompatActivity implements
 
     private DataClient mDataclient;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    File file;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
+
+   //private LiveData<DiaryRecord> mRecord;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +82,7 @@ public class EventDiary extends AppCompatActivity implements
         Log.v("Connect","Constructor");
 
         if(!dir.exists()){ dir.mkdirs();}
-        File file = new File(dir, fileName);
+        file = new File(dir, fileName);
         SmokeList = new LinkedList<>();
         try{
             Scanner s = new Scanner(file);
@@ -181,25 +186,57 @@ public class EventDiary extends AppCompatActivity implements
 
     @Override
     public void onDataChanged(@NonNull DataEventBuffer dataEventBuffer) {
+        final String DURATION_KEY = "com.example.duration.record";
+        final String RECORDID_KEY = "com.example.recordId.record";
+        final String TIMEZONE_KEY = "com.example.timeZone.record";
+        final String STARTDAT_KEY = "com.example.startDateAndTime.record";
+        final String LABEL_KEY = "com.example.userLabel.record";
+        final String RECORD_KEY = "com.example.record.record";
+
+        int duration;
+        long recordId;
+        String timeZone;
+        String startDateAndTime;
+        String userLabel;
+
         Log.v("Mobile", "DataChanged");
         for (DataEvent event : dataEventBuffer) {
             if (event.getType() == DataEvent.TYPE_CHANGED) {
                 // DataItem changed
                 DataItem item = event.getDataItem();
-                if (item.getUri().getPath().compareTo("/count1") == 0) {
+                DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
+                if (item.getUri().getPath().compareTo("/record") == 0) {
                     Log.v("Mobile", "DataReceived");
-                    DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+                    DataMap dataMap = dataMapItem.getDataMap().getDataMap(RECORD_KEY);
+                    duration = dataMap.getInt(DURATION_KEY);
+                    recordId = dataMap.getLong(RECORDID_KEY);
+                    timeZone = dataMap.getString(TIMEZONE_KEY);
+                    startDateAndTime = dataMap.getString(STARTDAT_KEY);
+                    userLabel = dataMap.getString(LABEL_KEY);
                     Log.v("Mobile", "DataReceived");
+
+                    if (isExternalStorageWritable()) {
+                        FileOutputStream outputStream;
+                        try {
+                            file.createNewFile();
+                            outputStream = new FileOutputStream(file, true);
+                            outputStream.write((startDateAndTime + "\n").getBytes());
+                            outputStream.close();
+                            Log.v("INFO", file.getAbsolutePath());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                } else if (event.getType() == DataEvent.TYPE_DELETED) {
+                    // DataItem deleted
                 }
-            } else if (event.getType() == DataEvent.TYPE_DELETED) {
-                // DataItem deleted
             }
         }
     }
 
-    private int count = 100;
     public void sendData() {
-        final String COUNT_KEY = "com.example.key.count";
+/*        final String COUNT_KEY = "com.example.key.count";
 
 
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/count1");
@@ -214,7 +251,8 @@ public class EventDiary extends AppCompatActivity implements
                     public void onSuccess(DataItem dataItem) {
                         Log.v("Mobile", "DataSend");
                     }
-                });
+                }); */
+
         Log.v("Mobile", "DataSend");
     }
 

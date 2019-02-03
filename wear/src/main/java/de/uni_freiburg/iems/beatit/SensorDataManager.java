@@ -2,6 +2,7 @@ package de.uni_freiburg.iems.beatit;
 
 import android.Manifest;
 import android.app.Application;
+import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -21,10 +22,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
 
-public class EcologicalMomentaryAssesmentActivity
+public class SensorDataManager
         implements SensorEventListener {
 
-    private TextView mTextView;
+    public MutableLiveData<Boolean> isMonitoringStarted;
+
     private SensorManager mSensorManager;
     private Sensor mSensorGyroscope;
     private Sensor mSensorAccelerometer;
@@ -107,8 +109,6 @@ public class EcologicalMomentaryAssesmentActivity
         mSensorManager.unregisterListener(this);
         isMonitoringStarted.setValue(false);
         return true;
-    }
-
     }
 
     @Override

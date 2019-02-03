@@ -11,10 +11,14 @@ public class MonitoringViewModel extends AndroidViewModel {
 
     private MutableLiveData<String> startTime;
     private SensorDataManager mSensorDataManager;
+    private ConnectionClass mDataSync;
+    private DiaryDataManager mdataManager;
 
     public MonitoringViewModel(@NonNull Application application) {
         super(application);
         mSensorDataManager = new SensorDataManager(application);
+        mDataSync = new ConnectionClass(application);
+        mdataManager = new DiaryDataManager(application);
     }
 
     public LiveData<Boolean> getIsMonitoringStarted() {
@@ -22,6 +26,7 @@ public class MonitoringViewModel extends AndroidViewModel {
     }
 
     public void startMonitoring() {
+        mDataSync.sendData(mdataManager);
         if (mSensorDataManager.isMonitoringStarted.getValue()) {
             mSensorDataManager.stopSensorMonitoring();
         } else {
