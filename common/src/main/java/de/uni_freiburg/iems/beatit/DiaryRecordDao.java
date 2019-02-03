@@ -21,6 +21,9 @@ public interface DiaryRecordDao {
     @Delete
     void delete(DiaryRecord record);
 
-    @Query("SELECT * FROM diary_table ORDER BY start_date_and_time ASC")
+    @Query("SELECT * FROM diary_table ORDER BY start_date_and_time DESC")
     LiveData<List<DiaryRecord>> getAllRecords();
+
+    @Query("SELECT * FROM diary_table WHERE record_id = :id ")
+    LiveData<DiaryRecord> getRecordById(long id);
 }

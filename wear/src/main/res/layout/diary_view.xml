@@ -1,8 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.wear.widget.WearableRecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/diary_coordinator_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<android.support.wear.widget.WearableRecyclerView
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/diary_recycler_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:scrollbars="vertical"
     tools:listitem="@layout/diary_item" />
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/diary_action_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_add_white_24dp"
+        android:backgroundTint="@color/action_button_color"
+        android:layout_marginTop="15dp"
+        android:layout_gravity="top|center_horizontal"
+        app:elevation="6dp"
+        app:pressedTranslationZ="12dp"
+        app:borderWidth="0dp"
+        app:layout_behavior="de.uni_freiburg.iems.beatit.ScrollAwareFabBehavior"/>
+</android.support.design.widget.CoordinatorLayout>
