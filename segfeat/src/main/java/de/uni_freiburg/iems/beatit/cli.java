@@ -276,7 +276,7 @@ public class cli implements Callable<Void> {
                 double result = mClassifier.classifyInstance(newInstance);
                 String className = Classes.get(new Double(result).intValue());
 
-                csvWriter.writeNext(new String[]{featureVector.mLabel.concat(SEPARATOR.concat(dblarr2str(featureVector.mVector))), className});
+                csvWriter.writeNext(new String[]{featureVector.mLabel.concat(SEPARATOR.concat(dblarr2str(featureVector.mVector)))});//, className});
 
 
             }
