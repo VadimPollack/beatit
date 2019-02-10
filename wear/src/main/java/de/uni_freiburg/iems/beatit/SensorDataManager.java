@@ -53,6 +53,12 @@ public class SensorDataManager
     private Application context;
     private NumberFormat formatter = new DecimalFormat("#0.000000");
 
+    private SegFeatWear segFeat = null;
+    private Integer windowlength= 200;
+    private double[] arraySensVal = {
+            ACX, ACY, ACZ, GYX, GYY, GYZ, MGX, MGY, MGZ
+    };
+
     public SensorDataManager(@NonNull Application context) {
         this.context = context;
         formatTime = new SimpleDateFormat("HH:mm:ss");
@@ -83,6 +89,14 @@ public class SensorDataManager
         mSensorRoatationVector = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         mSensorManager.registerListener(this, mSensorRoatationVector, SensorManager.SENSOR_DELAY_NORMAL);
 
+        try {
+            segFeat = new SegFeatWear.Builder()
+                    .setWindowSize(windowlength)
+                    .setSampleSize(9)
+                    .build();
+        }catch(Exception e){
+            //doSomething
+        }
         // Create an File in an external storage
         SimpleDateFormat format = new SimpleDateFormat("dd_MM_YY_HH_mm_ss");
         Calendar calendar = Calendar.getInstance();
@@ -134,6 +148,16 @@ public class SensorDataManager
         } else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
 
         }
+        try{
+            segFeat.write(arraySensVal);
+        }catch(Exception e){
+            //doSomething
+        }
+        SegFeatWear.FeatureVector featureVector = segFeat.read();
+        if (featureVector != null) {
+
+        }
+
 
         String value = "" + formatter.format(ACX) + " " + formatter.format(ACY) + " "
                 + formatter.format(ACZ) + " "

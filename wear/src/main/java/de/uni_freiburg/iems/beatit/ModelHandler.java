@@ -98,10 +98,13 @@ public class ModelHandler {
             add(attributeAttr3_Min);
         }
     };
+    private MLModel activeMLModel = null;
 
+    public MLModel getActiveMLModel(){
+        return activeMLModel;
+    }
 
-
-    public MLModel changeModel(Context modelContext,String ModelName){
+    public void changeModel(Context modelContext,String ModelName){
 
         ArrayList<Attribute> attributeList = attributeListRF3;
         AssetManager assetManager = modelContext.getAssets();
@@ -110,8 +113,7 @@ public class ModelHandler {
         }else if(ModelName == "RF_3Attr.model"){
             attributeList =attributeListRF3;
         }
-        MLModel Model = new MLModel(ModelName, attributeList, assetManager );
-        return Model;
+        activeMLModel = new MLModel(ModelName, attributeList, assetManager );
     }
 
     public class MLModel{
