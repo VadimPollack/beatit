@@ -10,12 +10,15 @@ public class MonitoringViewModel extends AndroidViewModel {
     private SensorDataManager mSensorDataManager;
     private ConnectionClass mDataSync;
     private DiaryDataManager mdataManager;
+    private ModelHandler mModelHandler;
 
     public MonitoringViewModel(@NonNull Application application) {
         super(application);
+        mModelHandler = ModelHandler.getInstance();
         mSensorDataManager = SensorDataManager.getInstance(application);
         mDataSync = new ConnectionClass(application);
         mdataManager = DiaryDataManager.getInstance(application);
+
     }
 
     public LiveData<Boolean> getIsMonitoringStarted() {

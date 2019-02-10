@@ -99,9 +99,21 @@ public class ModelHandler {
         }
     };
     private MLModel activeMLModel = null;
+    private static ModelHandler instance;
 
     public MLModel getActiveMLModel(){
         return activeMLModel;
+    }
+
+    public static synchronized ModelHandler getInstance() {
+            if (instance == null) {
+            return new ModelHandler();
+        }
+        return instance;
+    }
+
+    private ModelHandler(){
+
     }
 
     public void changeModel(Context modelContext,String ModelName){

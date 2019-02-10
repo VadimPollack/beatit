@@ -63,6 +63,7 @@ public class SensorDataManager
     private double[] arraySensVal = {
             ACX, ACY, ACZ, GYX, GYY, GYZ, MGX, MGY, MGZ
     };
+    private ModelHandler gModelHandler;
 
     public static synchronized SensorDataManager getInstance(Context context) {
         if (instance == null) {
@@ -72,14 +73,13 @@ public class SensorDataManager
     }
 
     private SensorDataManager(@NonNull Context context) {
-
-
-    public SensorDataManager(@NonNull Application context) {
         this.context = context;
         formatTime = new SimpleDateFormat("HH:mm:ss");
         isMonitoringStarted = new MutableLiveData<>();
         isMonitoringStarted.setValue(false);
         onSmokingEventDetectedListeners = new ArrayList<>();
+        gModelHandler = ModelHandler.getInstance();
+        gModelHandler.changeModel(context,"RF_9Attr.model");
     }
 
     /**
@@ -171,6 +171,10 @@ public class SensorDataManager
         }
         SegFeatWear.FeatureVector featureVector = segFeat.read();
         if (featureVector != null) {
+            ModelHandler.MLModel lMLModel;
+            String Ausgabe;
+            lMLModel = gModelHandler.getActiveMLModel();
+            Ausgabe = lMLModel.predictSmoking(featureVector.mVector);
 
         }
 
