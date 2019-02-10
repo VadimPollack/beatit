@@ -23,7 +23,9 @@ import android.support.wear.ambient.AmbientModeSupport;
 import android.support.wear.widget.drawer.WearableNavigationDrawerView;
 import android.view.Window;
 
+import java.util.Calendar;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import de.uni_freiburg.iems.beatit.notifications.NotificationUtil;
 import de.uni_freiburg.iems.beatit.notifications.SmokeEventDetectedIntentService;
@@ -32,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements
         AmbientModeSupport.AmbientCallbackProvider, WearableNavigationDrawerView.OnItemSelectedListener {
 
     public static final int NOTIFICATION_ID = 1;
+
+    private MainActivityViewModel viewModel;
 
     private enum NavigationSection {
         MotionMonitor(R.string.navigation_drawer_monitoring_title, R.drawable.ic_monitoring_black_24dp),
@@ -48,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private static final NavigationSection DEFAULT_SECTION = NavigationSection.Diary;
+    private static final NavigationSection DEFAULT_SECTION = NavigationSection.MotionMonitor;
 
     private NavigationSection mCurrentSection = DEFAULT_SECTION;
 
@@ -70,23 +74,23 @@ public class MainActivity extends AppCompatActivity implements
         mWearableNavigationDrawer.addOnItemSelectedListener(this);
 
         //initialize notification manager
-        MainActivityViewModel viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
+        viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         viewModel.setOnSmokingEventDetectedListener((record) -> {
             showOnSmokingEventDetectedNotification(record);
             //generateBigTextStyleNotification();
         });
 
 
-        final Fragment diaryFragment = DiaryView.newInstance();
+        final Fragment startFragment = MonitoringView.newInstance();
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_container, diaryFragment)
+                .replace(R.id.fragment_container, startFragment)
                 .commit();
     }
 
     private void generateBigTextStyleNotification() {
 
-       // Main steps for building a BIG_TEXT_STYLE notification:
+        // Main steps for building a BIG_TEXT_STYLE notification:
         //      0. Get your data
         //      1. Create/Retrieve Notification Channel for O and beyond devices (26+)
         //      2. Build the BIG_TEXT_STYLE
@@ -267,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements
         DateFormat df = new SimpleDateFormat("EEEE, d MMM, HH:mm", Locale.ENGLISH);
         NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle()
                 // Overrides ContentText in the big form of the template.
-                .bigText("@ " + df.format(record.startDateAndTime) +" ?")
+                .bigText("@ " + df.format(record.startDateAndTime) + " ?")
                 // Overrides ContentTitle in the big form of the template.
                 .setBigContentTitle("Did you smoke ")
                 // Summary line after the detail section in the big form of the template
@@ -305,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements
                 NotificationManagerCompat.from(this);
 
         // Build the notification and notify it using notification manager.
-        notificationManager.notify((int)record.recordId, notificationBuilder.build());
+        notificationManager.notify((int) record.recordId, notificationBuilder.build());
     }
 
     //---------------------Navigation Drawer--------------------------------------
@@ -352,7 +356,8 @@ public class MainActivity extends AppCompatActivity implements
                 selectedFragment = DiaryView.newInstance();
                 break;
             case Settings:
-                break;
+                viewModel.simulateSmokingEventDetected();
+                selectedSection = NavigationSection.Diary;
             default:
                 selectedFragment = DiaryView.newInstance();
         }

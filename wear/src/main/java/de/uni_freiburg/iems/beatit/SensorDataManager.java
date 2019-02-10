@@ -20,12 +20,16 @@ import android.widget.TextView;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class SensorDataManager
         implements SensorEventListener {
 
     public MutableLiveData<Boolean> isMonitoringStarted;
+
+    private List<OnSmokingEventDetectedListener> onSmokingEventDetectedListeners;
 
     private SensorManager mSensorManager;
     private Sensor mSensorGyroscope;
@@ -50,14 +54,32 @@ public class SensorDataManager
     private double MGX;
     private double MGY;
     private double MGZ;
-    private Application context;
+    private Context context;
     private NumberFormat formatter = new DecimalFormat("#0.000000");
 
-    public SensorDataManager(@NonNull Application context) {
+    private static SensorDataManager instance;
+    private SegFeatWear segFeat = null;
+    private Integer windowlength= 200;
+    private double[] arraySensVal = {
+            ACX, ACY, ACZ, GYX, GYY, GYZ, MGX, MGY, MGZ
+    };
+    private ModelHandler gModelHandler;
+
+    public static synchronized SensorDataManager getInstance(Context context) {
+        if (instance == null) {
+            return new SensorDataManager(context);
+        }
+        return instance;
+    }
+
+    private SensorDataManager(@NonNull Context context) {
         this.context = context;
         formatTime = new SimpleDateFormat("HH:mm:ss");
         isMonitoringStarted = new MutableLiveData<>();
         isMonitoringStarted.setValue(false);
+        onSmokingEventDetectedListeners = new ArrayList<>();
+        gModelHandler = ModelHandler.getInstance();
+        gModelHandler.changeModel(context,"RF_9Attr.model");
     }
 
     /**
@@ -69,20 +91,28 @@ public class SensorDataManager
         mSensorManager = (SensorManager) this.context.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
 
         mSensorAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mSensorManager.registerListener(this, mSensorAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager.registerListener(this, mSensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
         mSensorGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        mSensorManager.registerListener(this, mSensorGyroscope, SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager.registerListener(this, mSensorGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
 
         mSensorMagneticField = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        mSensorManager.registerListener(this, mSensorMagneticField, SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager.registerListener(this, mSensorMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
 
         mSensorPressure = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
-        mSensorManager.registerListener(this, mSensorPressure, SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager.registerListener(this, mSensorPressure, SensorManager.SENSOR_DELAY_NORMAL);
 
         mSensorRoatationVector = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        mSensorManager.registerListener(this, mSensorRoatationVector, SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager.registerListener(this, mSensorRoatationVector, SensorManager.SENSOR_DELAY_NORMAL);
 
+        try {
+            segFeat = new SegFeatWear.Builder()
+                    .setWindowSize(windowlength)
+                    .setSampleSize(9)
+                    .build();
+        }catch(Exception e){
+            //doSomething
+        }
         // Create an File in an external storage
         SimpleDateFormat format = new SimpleDateFormat("dd_MM_YY_HH_mm_ss");
         Calendar calendar = Calendar.getInstance();
@@ -102,7 +132,7 @@ public class SensorDataManager
             }
         }
         isMonitoringStarted.setValue(true);
-        return false;
+        return true;
     }
 
     public boolean stopSensorMonitoring() {
@@ -117,7 +147,6 @@ public class SensorDataManager
         Calendar calendar = Calendar.getInstance();
         String time = formatTime.format(calendar.getTime());
         time = formatTime.format(event.timestamp);
-
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             ACY = (double) event.values[1];
             ACZ = (double) event.values[2];
@@ -130,11 +159,25 @@ public class SensorDataManager
             MGY = (double) event.values[1];
             MGZ = (double) event.values[2];
             MGX = (double) event.values[0];
-        } /*else if (event.sensor.getType() == Sensor.TYPE_PRESSURE) {
+        } else if (event.sensor.getType() == Sensor.TYPE_PRESSURE) {
 
         } else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
 
-        }*/
+        }
+        try{
+            segFeat.write(arraySensVal);
+        }catch(Exception e){
+            //doSomething
+        }
+        SegFeatWear.FeatureVector featureVector = segFeat.read();
+        if (featureVector != null) {
+            ModelHandler.MLModel lMLModel;
+            String Ausgabe;
+            lMLModel = gModelHandler.getActiveMLModel();
+            Ausgabe = lMLModel.predictSmoking(featureVector.mVector);
+
+        }
+
 
         String value = "" + formatter.format(ACX) + " " + formatter.format(ACY) + " "
                 + formatter.format(ACZ) + " "
@@ -177,6 +220,20 @@ public class SensorDataManager
             Log.v("INFO", e.getMessage());
         }
     }
+
+    public void SimulateSmokingEventDetected() {
+        for (OnSmokingEventDetectedListener listener:onSmokingEventDetectedListeners) {
+            listener.onSmokingEventDetected( 3000);
+        }
+    }
+    public void addOnSmokingEventDetectedListener(OnSmokingEventDetectedListener listener){
+        onSmokingEventDetectedListeners.add(listener);
+    }
+
+    public interface OnSmokingEventDetectedListener {
+        void onSmokingEventDetected(int durationInMiliseconds);
+    }
+
 /*    public  boolean isStoragePermissionGranted() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

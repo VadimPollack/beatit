@@ -3,22 +3,22 @@ package de.uni_freiburg.iems.beatit;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
 
 public class MonitoringViewModel extends AndroidViewModel {
 
-
-    private MutableLiveData<String> startTime;
     private SensorDataManager mSensorDataManager;
     private ConnectionClass mDataSync;
     private DiaryDataManager mdataManager;
+    private ModelHandler mModelHandler;
 
     public MonitoringViewModel(@NonNull Application application) {
         super(application);
-        mSensorDataManager = new SensorDataManager(application);
+        mModelHandler = ModelHandler.getInstance();
+        mSensorDataManager = SensorDataManager.getInstance(application);
         mDataSync = new ConnectionClass(application);
-        mdataManager = new DiaryDataManager(application);
+        mdataManager = DiaryDataManager.getInstance(application);
+
     }
 
     public LiveData<Boolean> getIsMonitoringStarted() {
@@ -27,10 +27,13 @@ public class MonitoringViewModel extends AndroidViewModel {
 
     public void startMonitoring() {
         mDataSync.sendData(mdataManager);
-        if (mSensorDataManager.isMonitoringStarted.getValue()) {
-            mSensorDataManager.stopSensorMonitoring();
-        } else {
-            mSensorDataManager.startSensorMonitoring();
-        }
+        if (mSensorDataManager.isMonitoringStarted.getValue()) return;
+        mSensorDataManager.startSensorMonitoring();
+
+    }
+
+    public void stopMonitoring() {
+        if (!mSensorDataManager.isMonitoringStarted.getValue()) return;
+        mSensorDataManager.stopSensorMonitoring();
     }
 }
