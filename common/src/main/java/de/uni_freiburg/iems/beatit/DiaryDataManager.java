@@ -2,7 +2,9 @@ package de.uni_freiburg.iems.beatit;
 
 import android.app.Application;
 import android.arch.lifecycle.LiveData;
+import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 
 import java.util.List;
 
@@ -10,8 +12,17 @@ public class DiaryDataManager {
     private DiaryRecordDao recordDao;
     private LiveData<List<DiaryRecord>> diary;
 
-    public DiaryDataManager(Application application) {
-        DiaryDatabase diaryDatabase = DiaryDatabase.getInstance(application);
+    private static DiaryDataManager instance;
+
+    public static synchronized DiaryDataManager getInstance(Context context) {
+        if (instance == null) {
+            return new DiaryDataManager(context);
+        }
+        return instance;
+    }
+
+    private DiaryDataManager(@NonNull Context context) {
+        DiaryDatabase diaryDatabase = DiaryDatabase.getInstance(context);
         recordDao = diaryDatabase.diaryRecordDao();
         diary = recordDao.getAllRecords();
     }
@@ -34,7 +45,7 @@ public class DiaryDataManager {
         return diary;
     }
 
-    public LiveData<DiaryRecord> getRecordById(long id) {
+    public DiaryRecord getRecordById(long id) {
         return recordDao.getRecordById(id);
     }
 
