@@ -20,12 +20,16 @@ import android.widget.TextView;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class SensorDataManager
         implements SensorEventListener {
 
     public MutableLiveData<Boolean> isMonitoringStarted;
+
+    private List<OnSmokingEventDetectedListener> onSmokingEventDetectedListeners;
 
     private SensorManager mSensorManager;
     private Sensor mSensorGyroscope;
@@ -50,20 +54,32 @@ public class SensorDataManager
     private double MGX;
     private double MGY;
     private double MGZ;
-    private Application context;
+    private Context context;
     private NumberFormat formatter = new DecimalFormat("#0.000000");
 
+    private static SensorDataManager instance;
     private SegFeatWear segFeat = null;
     private Integer windowlength= 200;
     private double[] arraySensVal = {
             ACX, ACY, ACZ, GYX, GYY, GYZ, MGX, MGY, MGZ
     };
 
+    public static synchronized SensorDataManager getInstance(Context context) {
+        if (instance == null) {
+            return new SensorDataManager(context);
+        }
+        return instance;
+    }
+
+    private SensorDataManager(@NonNull Context context) {
+
+
     public SensorDataManager(@NonNull Application context) {
         this.context = context;
         formatTime = new SimpleDateFormat("HH:mm:ss");
         isMonitoringStarted = new MutableLiveData<>();
         isMonitoringStarted.setValue(false);
+        onSmokingEventDetectedListeners = new ArrayList<>();
     }
 
     /**
@@ -116,7 +132,7 @@ public class SensorDataManager
             }
         }
         isMonitoringStarted.setValue(true);
-        return false;
+        return true;
     }
 
     public boolean stopSensorMonitoring() {
@@ -200,6 +216,20 @@ public class SensorDataManager
             Log.v("INFO", e.getMessage());
         }
     }
+
+    public void SimulateSmokingEventDetected() {
+        for (OnSmokingEventDetectedListener listener:onSmokingEventDetectedListeners) {
+            listener.onSmokingEventDetected( 3000);
+        }
+    }
+    public void addOnSmokingEventDetectedListener(OnSmokingEventDetectedListener listener){
+        onSmokingEventDetectedListeners.add(listener);
+    }
+
+    public interface OnSmokingEventDetectedListener {
+        void onSmokingEventDetected(int durationInMiliseconds);
+    }
+
 /*    public  boolean isStoragePermissionGranted() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

@@ -13,7 +13,7 @@ public class DiaryViewModel extends AndroidViewModel {
 
     public DiaryViewModel(@NonNull Application application) {
         super(application);
-        dataManager = new DiaryDataManager(application);
+        dataManager = DiaryDataManager.getInstance(application);
         diary = dataManager.getDiary();
     }
 
