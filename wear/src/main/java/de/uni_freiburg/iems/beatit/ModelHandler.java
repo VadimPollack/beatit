@@ -13,9 +13,9 @@ import weka.core.DenseInstance;
 import weka.core.Instances;
 import weka.classifiers.Classifier;
 
-public class ModelRF9 {
+public class ModelHandler {
 
-    private Classifier mClassifier = null;
+
     private final Attribute attributeAttr1_Mean = new Attribute("Attr1_Mean");
     private final Attribute attributeAttr1_Max = new Attribute("Attr1_Max");
     private final Attribute attributeAttr1_Min = new Attribute("Attr1_Min");
@@ -50,7 +50,7 @@ public class ModelRF9 {
         }
     };
 
-    private ArrayList<Attribute> attributeList = new ArrayList<Attribute>(2){
+    private ArrayList<Attribute> attributeListRF9 = new ArrayList<Attribute>(2){
         {
             Attribute attributeClassifier = new Attribute("Classifier", Classes);
             add(attributeClassifier);
@@ -83,78 +83,81 @@ public class ModelRF9 {
             add(attributeAttr9_Min);
         }
     };
-    private Instances SensorDataUnpredicted = new Instances("SensorData", attributeList, 1);
+    private ArrayList<Attribute> attributeListRF3 = new ArrayList<Attribute>(2){
+        {
+            Attribute attributeClassifier = new Attribute("Classifier", Classes);
+            add(attributeClassifier);
+            add(attributeAttr1_Mean);
+            add(attributeAttr1_Max);
+            add(attributeAttr1_Min);
+            add(attributeAttr2_Mean);
+            add(attributeAttr2_Max);
+            add(attributeAttr2_Min);
+            add(attributeAttr3_Mean);
+            add(attributeAttr3_Max);
+            add(attributeAttr3_Min);
+        }
+    };
 
 
-    public void startModel(Context modelContext){
 
+    public MLModel changeModel(Context modelContext,String ModelName){
+
+        ArrayList<Attribute> attributeList = attributeListRF3;
         AssetManager assetManager = modelContext.getAssets();
-        try {
-            mClassifier = (Classifier) weka.core.SerializationHelper.read(assetManager.open("RF_9Attr.model"));
-        }catch(IOException e){
-            //do something
-        }catch (Exception e){
-            //do something else
+        if( ModelName == "RF_9Attr.model"){
+            attributeList =attributeListRF9;
+        }else if(ModelName == "RF_3Attr.model"){
+            attributeList =attributeListRF3;
         }
-        SensorDataUnpredicted.setClassIndex(0);
+        MLModel Model = new MLModel(ModelName, attributeList, assetManager );
+        return Model;
     }
 
-    public void unloadModel(){
-        mClassifier = null;
-    }
+    public class MLModel{
+        private String ModelName;
+        private ArrayList<Attribute> attributeList;
+        private Classifier mClassifier = null;
+        private Instances SensorDataUnpredicted = new Instances("SensorData", attributeList, 1);
 
-    public String predictSmoking(double[] vector){
+        public MLModel(String Name, ArrayList<Attribute> AttList, AssetManager assetManager){
+            ModelName = Name;
+            attributeList = AttList;
+            SensorDataUnpredicted.setClassIndex(0);
+            mClassifier = this.ReturnClassifier(assetManager);
+        }
 
-        String className = "NoPrediction";
-        DenseInstance newInstance = new DenseInstance(SensorDataUnpredicted.numAttributes()){
-            {
-                setValue(attributeAttr1_Mean, 0 );
-                setValue(attributeAttr1_Max, 0 );
-                setValue(attributeAttr1_Min, 0 );
-                setValue(attributeAttr2_Mean,0 );
-                setValue(attributeAttr2_Max, 0 );
-                setValue(attributeAttr2_Min, 0 );
-                setValue(attributeAttr3_Mean, 0 );
-                setValue(attributeAttr3_Max, 0 );
-                setValue(attributeAttr3_Min, 0);
-                setValue(attributeAttr4_Mean,0);
-                setValue(attributeAttr4_Max,0 );
-                setValue(attributeAttr4_Min, 0);
-                setValue(attributeAttr5_Mean, 0);
-                setValue(attributeAttr5_Max, 0 );
-                setValue(attributeAttr5_Min, 0 );
-                setValue(attributeAttr6_Mean, 0 );
-                setValue(attributeAttr6_Max, 0 );
-                setValue(attributeAttr6_Min, 0 );
-                setValue(attributeAttr7_Mean, 0 );
-                setValue(attributeAttr7_Max, 0 );
-                setValue(attributeAttr7_Min, 0 );
-                setValue(attributeAttr8_Mean, 0 );
-                setValue(attributeAttr8_Max, 0 );
-                setValue(attributeAttr8_Min, 0 );
-                setValue(attributeAttr9_Mean, 0 );
-                setValue(attributeAttr9_Max, 0 );
-                setValue(attributeAttr9_Min, 0 );
+        private Classifier ReturnClassifier(AssetManager assetManager){
+            try {
+                return (Classifier) weka.core.SerializationHelper.read(assetManager.open(ModelName)); //"RF_9Attr.model"
+            }catch(IOException e){
+                //do something
+            }catch(Exception e){
+                //do something else
             }
-        };
-        if(mClassifier ==null || vector.length != 27){
-            return "ErrorNoPrediction";
+            return (Classifier) null;
         }
-        newInstance.setDataset(SensorDataUnpredicted);
+        public String predictSmoking(double[] vector) {
+            String className = "NoPrediction";
+            DenseInstance newInstance = new DenseInstance(SensorDataUnpredicted.numAttributes());
 
-        for(int ii=0; ii<27; ii++){
-            newInstance.setValue(attributeList.get(ii +1),vector[ii]);
+            if(mClassifier ==null || vector.length != SensorDataUnpredicted.numAttributes()){
+                return "ErrorNoPrediction";
+            }
+            newInstance.setDataset(SensorDataUnpredicted);
+            for(int ii=0; ii<SensorDataUnpredicted.numAttributes(); ii++){
+                newInstance.setValue(attributeList.get(ii +1),vector[ii]);
+            }
+            try{
+                double result = mClassifier.classifyInstance(newInstance);
+                className = Classes.get(new Double(result).intValue());
+            }catch(Exception e){
+                //doSomething
+            }
+
+            return className;
         }
 
-        try{
-            double result = mClassifier.classifyInstance(newInstance);
-            className = Classes.get(new Double(result).intValue());
-        }catch(Exception e){
-            //doSomething
-        }
-        return className;
     }
-
-
 
 }
