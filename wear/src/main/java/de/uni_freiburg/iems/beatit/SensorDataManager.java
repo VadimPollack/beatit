@@ -60,9 +60,7 @@ public class SensorDataManager
     private static SensorDataManager instance;
     private SegFeatWear segFeat = null;
     private Integer windowlength= 200;
-    private double[] arraySensVal = {
-            ACX, ACY, ACZ, GYX, GYY, GYZ, MGX, MGY, MGZ
-    };
+
     private ModelHandler gModelHandler;
 
     public static synchronized SensorDataManager getInstance(Context context) {
@@ -165,7 +163,7 @@ public class SensorDataManager
 
         }
         try{
-            segFeat.write(arraySensVal);
+            segFeat.write(new double[]{ ACX, ACY, ACZ, GYX, GYY, GYZ, MGX, MGY, MGZ});
         }catch(Exception e){
             //doSomething
         }
