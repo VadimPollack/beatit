@@ -65,7 +65,7 @@ public class SensorDataManager
 
     public static synchronized SensorDataManager getInstance(Context context) {
         if (instance == null) {
-            return new SensorDataManager(context);
+            instance = new SensorDataManager(context);
         }
         return instance;
     }
@@ -170,9 +170,10 @@ public class SensorDataManager
         SegFeatWear.FeatureVector featureVector = segFeat.read();
         if (featureVector != null) {
             ModelHandler.MLModel lMLModel;
-            String Ausgabe;
+            String Ausgabe, Ausgabe2;
             lMLModel = gModelHandler.getActiveMLModel();
             Ausgabe = lMLModel.predictSmoking(featureVector.mVector);
+            Ausgabe2 = Ausgabe;
 
         }
 
