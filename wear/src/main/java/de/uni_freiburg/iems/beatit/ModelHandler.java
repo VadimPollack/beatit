@@ -4,6 +4,7 @@ import android.content.res.AssetManager;
 import android.content.Context;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
@@ -106,8 +107,8 @@ public class ModelHandler {
     }
 
     public static synchronized ModelHandler getInstance() {
-            if (instance == null) {
-            return new ModelHandler();
+        if (instance == null) {
+            instance = new ModelHandler();
         }
         return instance;
     }
@@ -144,6 +145,8 @@ public class ModelHandler {
 
         private Classifier ReturnClassifier(AssetManager assetManager){
             try {
+                InputStream inputStream = assetManager.open(ModelName);
+                List<String> mapList = Arrays.asList(assetManager.list(""));
                 return (Classifier) weka.core.SerializationHelper.read(assetManager.open(ModelName)); //"RF_9Attr.model"
             }catch(IOException e){
                 //do something
@@ -156,11 +159,11 @@ public class ModelHandler {
             String className = "NoPrediction";
             DenseInstance newInstance = new DenseInstance(SensorDataUnpredicted.numAttributes());
 
-            if(mClassifier ==null || vector.length != SensorDataUnpredicted.numAttributes()){
+            if(mClassifier ==null || vector.length != (SensorDataUnpredicted.numAttributes()-1)){
                 return "ErrorNoPrediction";
             }
             newInstance.setDataset(SensorDataUnpredicted);
-            for(int ii=0; ii<SensorDataUnpredicted.numAttributes(); ii++){
+            for(int ii=0; ii<(SensorDataUnpredicted.numAttributes()-1); ii++){
                 newInstance.setValue(attributeList.get(ii +1),vector[ii]);
             }
             try{
