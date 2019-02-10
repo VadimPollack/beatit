@@ -28,7 +28,6 @@ public class DiaryDataManager {
     }
 
     public void insert(DiaryRecord record) {
-
         new InsertNoteAsyncTask(recordDao).execute(record);
     }
 
@@ -43,7 +42,6 @@ public class DiaryDataManager {
     }
 
     public LiveData<List<DiaryRecord>> getDiary() {
-
         return diary;
     }
 

@@ -132,11 +132,12 @@ public class ModelHandler {
         private String ModelName;
         private ArrayList<Attribute> attributeList;
         private Classifier mClassifier = null;
-        private Instances SensorDataUnpredicted = new Instances("SensorData", attributeList, 1);
+        private Instances SensorDataUnpredicted;
 
         public MLModel(String Name, ArrayList<Attribute> AttList, AssetManager assetManager){
             ModelName = Name;
             attributeList = AttList;
+            SensorDataUnpredicted  = new Instances("SensorData", attributeList, 1);
             SensorDataUnpredicted.setClassIndex(0);
             mClassifier = this.ReturnClassifier(assetManager);
         }
