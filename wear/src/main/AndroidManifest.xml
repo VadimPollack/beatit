@@ -39,6 +39,14 @@
             android:name=".notifications.SmokeEventDetectedIntentService"
             android:exported="false">
         </service>
+
+        <receiver android:name=".ConnectionClass">
+            <intent-filter>
+                <action android:name="com.example.Broadcast" >
+                </action>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

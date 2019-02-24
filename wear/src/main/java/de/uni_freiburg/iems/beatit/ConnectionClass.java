@@ -2,6 +2,9 @@ package de.uni_freiburg.iems.beatit;
 
 import android.app.Application;
 import android.arch.lifecycle.LiveData;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -25,7 +28,7 @@ import com.google.android.gms.wearable.Wearable;
 import java.util.List;
 
 
-public class ConnectionClass  implements
+public class ConnectionClass extends BroadcastReceiver implements
         DataClient.OnDataChangedListener,
         MessageClient.OnMessageReceivedListener,
         CapabilityClient.OnCapabilityChangedListener {
@@ -43,6 +46,19 @@ public class ConnectionClass  implements
     public void sendData(DiaryDataManager mDatamanager) {
         task =  new SyncDataAsyncTask(mDatamanager);
         task.execute();
+    }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        Log.v("Intent", intent.getAction().toString());
+        String StartTime = intent.getStringExtra("StartTime");
+        String StopTime = intent.getStringExtra("StopTime");
+        String SenderInfo = intent.getStringExtra("SenderInfo");
+
+        Log.v("StartTime", StartTime);
+        Log.v("StopTime", StopTime);
+        Log.v("SenderInfo", SenderInfo);
+
     }
 
     private class SyncDataAsyncTask extends AsyncTask<DiaryRecord, Void, Void> {
@@ -132,6 +148,5 @@ public class ConnectionClass  implements
 
     @Override
     public void onMessageReceived(@NonNull MessageEvent messageEvent) {
-
     }
 }

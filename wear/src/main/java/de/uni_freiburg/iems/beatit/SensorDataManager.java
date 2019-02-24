@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Application;
 import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -14,14 +15,17 @@ import android.icu.text.DecimalFormat;
 import android.icu.text.NumberFormat;
 import android.icu.text.SimpleDateFormat;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.TextView;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class SensorDataManager
@@ -60,6 +64,8 @@ public class SensorDataManager
     private static SensorDataManager instance;
     private SegFeatWear segFeat = null;
     private Integer windowlength= 200;
+    private long SensorTimeStamp = 0;
+    private long StartTimeStamp = 0;
 
     private ModelHandler gModelHandler;
 
@@ -89,19 +95,21 @@ public class SensorDataManager
         mSensorManager = (SensorManager) this.context.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
 
         mSensorAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mSensorManager.registerListener(this, mSensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mSensorAccelerometer,20000);
 
         mSensorGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        mSensorManager.registerListener(this, mSensorGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mSensorGyroscope, 20000);
 
         mSensorMagneticField = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        mSensorManager.registerListener(this, mSensorMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mSensorMagneticField, 20000);
 
+       /*
         mSensorPressure = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
-        mSensorManager.registerListener(this, mSensorPressure, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mSensorPressure,20000);
 
         mSensorRoatationVector = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        mSensorManager.registerListener(this, mSensorRoatationVector, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mSensorRoatationVector, 20000);
+        */
 
         try {
             segFeat = new SegFeatWear.Builder()
@@ -142,9 +150,44 @@ public class SensorDataManager
     @Override
     public void onSensorChanged(SensorEvent event) {
         // getting the device Time.
-        Calendar calendar = Calendar.getInstance();
+        /*Calendar calendar = Calendar.getInstance();
         String time = formatTime.format(calendar.getTime());
-        time = formatTime.format(event.timestamp);
+        time = formatTime.format(event.timestamp);*/
+        long timeInMillis = (new Date()).getTime()
+                + (event.timestamp - System.nanoTime()) / 1000000L;
+        Timestamp stamp = new Timestamp(timeInMillis);
+
+        timeInMillis = timeInMillis / 10;
+
+        if (0 == SensorTimeStamp) {
+            SensorTimeStamp = timeInMillis;
+            StartTimeStamp = timeInMillis;
+        }
+
+        Log.v("SensorTimeStamp1", stamp.toString());
+        Log.v("SensorTimeStamp2", (new Long(timeInMillis)).toString());
+        Log.v("Sensor",event.sensor.getName());
+
+        if (timeInMillis > SensorTimeStamp) {
+
+            try {
+                segFeat.write(new double[]{ACX, ACY, ACZ, GYX, GYY, GYZ, MGX, MGY, MGZ});
+            } catch (Exception e) {
+                //doSomething
+            }
+
+            String value = "" + formatter.format(ACX) + " " + formatter.format(ACY) + " "
+                    + formatter.format(ACZ) + " "
+                    + formatter.format(GYX) + " " + formatter.format(GYY) + " "
+                    + formatter.format(GYZ) + " "
+                    + formatter.format(MGX) + " " + formatter.format(MGY) + " "
+                    + formatter.format(MGZ) + "\n";
+
+            Log.v("INFO", value);
+            writeToFile(value);
+            SensorTimeStamp = timeInMillis;
+        }
+
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             ACY = (double) event.values[1];
             ACZ = (double) event.values[2];
@@ -162,39 +205,37 @@ public class SensorDataManager
         } else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
 
         }
-        try{
-            segFeat.write(new double[]{ ACX, ACY, ACZ, GYX, GYY, GYZ, MGX, MGY, MGZ});
-        }catch(Exception e){
-            //doSomething
-        }
+
         SegFeatWear.FeatureVector featureVector = segFeat.read();
         if (featureVector != null) {
             ModelHandler.MLModel lMLModel;
             String Ausgabe, Ausgabe2;
             lMLModel = gModelHandler.getActiveMLModel();
             Ausgabe = lMLModel.predictSmoking(featureVector.mVector);
-            Ausgabe2 = Ausgabe;
+            Ausgabe2 = "Team2_" + Ausgabe;
 
+            Intent intent = new Intent();
+            intent.setAction("de.uni_freiburg.iems.beatit");
+            intent.putExtra("StartTime", (new Timestamp(SensorTimeStamp)).toString());
+            intent.putExtra("StopTime", (new Timestamp(StartTimeStamp)).toString());
+            intent.putExtra("SenderInfo", Ausgabe2);
+
+            context.sendBroadcast(intent);
+
+            StartTimeStamp = SensorTimeStamp;
+
+            StartTimeStamp = SensorTimeStamp;
         }
 
 
-        String value = "" + formatter.format(ACX) + " " + formatter.format(ACY) + " "
-                + formatter.format(ACZ) + " "
-                + formatter.format(GYX) + " " + formatter.format(GYY) + " "
-                + formatter.format(GYZ) + " "
-                + formatter.format(MGX) + " " + formatter.format(MGY) + " "
-                + formatter.format(MGZ) + "\n";
 
-        String Label = "Null";
+
+        /*String Label = "Null";
         Integer rand = ((int) (Math.random() * 10)) % 2;
         if (0 == rand) {
             Label = "smoking";
         }
-        value = Label + " " + value;
-
-
-        Log.v("INFO", value);
-        writeToFile(value);
+        value = Label + " " + value;*/
     }
 
     @Override
