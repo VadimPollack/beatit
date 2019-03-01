@@ -3,6 +3,7 @@ package de.uni_freiburg.iems.beatit;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
+import android.content.IntentFilter;
 import android.support.annotation.NonNull;
 
 public class MonitoringViewModel extends AndroidViewModel {
@@ -18,6 +19,9 @@ public class MonitoringViewModel extends AndroidViewModel {
         mSensorDataManager = SensorDataManager.getInstance(application);
         mDataSync = new ConnectionClass(application);
         mdataManager = DiaryDataManager.getInstance(application);
+        IntentFilter filter = new IntentFilter("de.uni_freiburg.iems.beatit");
+
+        application.registerReceiver(mDataSync, filter);
 
     }
 

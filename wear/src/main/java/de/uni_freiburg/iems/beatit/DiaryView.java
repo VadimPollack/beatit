@@ -36,7 +36,7 @@ public class DiaryView extends Fragment
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        getContext().deleteDatabase("diary_database");
+        //getContext().deleteDatabase("diary_database");
         return inflater.inflate(R.layout.diary_view, container, false);
     }
 
