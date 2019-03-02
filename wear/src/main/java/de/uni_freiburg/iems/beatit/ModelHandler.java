@@ -44,16 +44,22 @@ public class ModelHandler {
     private final Attribute attributeAttr9_Mean = new Attribute("Attr9_Mean");
     private final Attribute attributeAttr9_Max = new Attribute("Attr9_Max");
     private final Attribute attributeAttr9_Min = new Attribute("Attr9_Min");
-    private final List<String> Classes = new ArrayList<String>(){
+    private final List<String> ClassesSmoking = new ArrayList<String>(){
         {
             add("NULL");
             add("smoking");
         }
     };
-
-    private ArrayList<Attribute> attributeListRF9 = new ArrayList<Attribute>(2){
+    private final List<String> ClassesHandWashing = new ArrayList<String>(){
         {
-            Attribute attributeClassifier = new Attribute("Classifier", Classes);
+            add("NULL");
+            add("handwashing");
+        }
+    };
+
+    private ArrayList<Attribute> attributeList6Att = new ArrayList<Attribute>(2){
+        {
+            Attribute attributeClassifier = new Attribute("Classifier", ClassesSmoking);
             add(attributeClassifier);
             add(attributeAttr1_Mean);
             add(attributeAttr1_Max);
@@ -73,20 +79,35 @@ public class ModelHandler {
             add(attributeAttr6_Mean);
             add(attributeAttr6_Max);
             add(attributeAttr6_Min);
-            add(attributeAttr7_Mean);
-            add(attributeAttr7_Max);
-            add(attributeAttr7_Min);
-            add(attributeAttr8_Mean);
-            add(attributeAttr8_Max);
-            add(attributeAttr8_Min);
-            add(attributeAttr9_Mean);
-            add(attributeAttr9_Max);
-            add(attributeAttr9_Min);
         }
     };
-    private ArrayList<Attribute> attributeListRF3 = new ArrayList<Attribute>(2){
+    private ArrayList<Attribute> attributeList6AttHW = new ArrayList<Attribute>(2){
         {
-            Attribute attributeClassifier = new Attribute("Classifier", Classes);
+            Attribute attributeClassifier = new Attribute("Classifier", ClassesHandWashing);
+            add(attributeClassifier);
+            add(attributeAttr1_Mean);
+            add(attributeAttr1_Max);
+            add(attributeAttr1_Min);
+            add(attributeAttr2_Mean);
+            add(attributeAttr2_Max);
+            add(attributeAttr2_Min);
+            add(attributeAttr3_Mean);
+            add(attributeAttr3_Max);
+            add(attributeAttr3_Min);
+            add(attributeAttr4_Mean);
+            add(attributeAttr4_Max);
+            add(attributeAttr4_Min);
+            add(attributeAttr5_Mean);
+            add(attributeAttr5_Max);
+            add(attributeAttr5_Min);
+            add(attributeAttr6_Mean);
+            add(attributeAttr6_Max);
+            add(attributeAttr6_Min);
+        }
+    };
+    private ArrayList<Attribute> attributeList3Att = new ArrayList<Attribute>(2){
+        {
+            Attribute attributeClassifier = new Attribute("Classifier", ClassesSmoking);
             add(attributeClassifier);
             add(attributeAttr1_Mean);
             add(attributeAttr1_Max);
@@ -119,13 +140,16 @@ public class ModelHandler {
 
     public void changeModel(Context modelContext,String ModelName){
 
-        ArrayList<Attribute> attributeList = attributeListRF3;
+        ArrayList<Attribute> attributeList = attributeList3Att;
         AssetManager assetManager = modelContext.getAssets();
-        if( ModelName == "RF_9Attr.model"){
-            attributeList =attributeListRF9;
-        }else if(ModelName == "RF_3Attr.model"){
-            attributeList =attributeListRF3;
+        if( ModelName == "RF__6Attr.model"){
+            attributeList =attributeList6Att;
+        }else if(ModelName == "RF__3Attr.model"){
+            attributeList =attributeList3Att;
+        }else if(ModelName == "Handwashing.model") {
+            attributeList =attributeList6AttHW;
         }
+
         activeMLModel = new MLModel(ModelName, attributeList, assetManager );
     }
 
@@ -147,19 +171,20 @@ public class ModelHandler {
             try {
                 InputStream inputStream = assetManager.open(ModelName);
                 List<String> mapList = Arrays.asList(assetManager.list(""));
-                return (Classifier) weka.core.SerializationHelper.read(assetManager.open(ModelName)); //"RF_9Attr.model"
+                return (Classifier) weka.core.SerializationHelper.read(assetManager.open(ModelName));
             }catch(IOException e){
-                //do something
+                return (Classifier) null;
             }catch(Exception e){
                 //do something else
+                return (Classifier) null;
             }
-            return (Classifier) null;
+
         }
         public String predictSmoking(double[] vector) {
             String className = "NoPrediction";
             DenseInstance newInstance = new DenseInstance(SensorDataUnpredicted.numAttributes());
 
-            if(mClassifier ==null || vector.length != (SensorDataUnpredicted.numAttributes()-1)){
+            if(mClassifier ==null || vector.length < (SensorDataUnpredicted.numAttributes()-1)){
                 return "ErrorNoPrediction";
             }
             newInstance.setDataset(SensorDataUnpredicted);
@@ -168,7 +193,11 @@ public class ModelHandler {
             }
             try{
                 double result = mClassifier.classifyInstance(newInstance);
-                className = Classes.get(new Double(result).intValue());
+                if(ModelName=="Handwashing.model"){
+                    className = ClassesHandWashing.get(new Double(result).intValue());
+                }else {
+                    className = ClassesSmoking.get(new Double(result).intValue());
+                }
             }catch(Exception e){
                 //doSomething
             }

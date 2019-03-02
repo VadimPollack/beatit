@@ -78,7 +78,7 @@ public class ConnectionClass implements
                 for (DiaryRecord mRecord : mDatamanager.getDiarySync()) {
                     DataMap map = new DataMap();
                     map.putInt(DURATION_KEY, mRecord.duration);
-                    map.putLong(RECORDID_KEY, mRecord.recordId);
+                    map.putString(RECORDID_KEY, mRecord.recordId);
                     map.putString(TIMEZONE_KEY, mRecord.timeZone);
                     map.putString(STARTDAT_KEY, mRecord.startDateAndTime.toString());
                     map.putString(LABEL_KEY, mRecord.userLabel.toString());

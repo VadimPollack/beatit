@@ -32,9 +32,9 @@ public class MonitoringView extends Fragment {
         startStopButton = rootView.findViewById(R.id.monitoring_start_stop_button);
         Spinner spinner = rootView.findViewById(R.id.monitoring_model_spinner);
         List<String> list = new ArrayList<>();
-        list.add("Model1");
-        list.add("Model2");
-        list.add("Model3");
+        list.add("Smoking_RF10");
+        list.add("Smoking_RF21");
+        list.add("HandWashing");
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this.getContext(),
                 android.R.layout.simple_spinner_item, list.toArray(new String[0]));
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -42,7 +42,10 @@ public class MonitoringView extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 //todo implement choice of model
-            }
+
+                monitoringViewModel.selectMLModellMonitoring(parent.getContext(), position);
+
+        }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {

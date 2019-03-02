@@ -36,5 +36,5 @@ dependencies {
     implementation "android.arch.lifecycle:extensions:$lifecycle_version"
     annotationProcessor "android.arch.lifecycle:compiler:$lifecycle_version"
     implementation project(path: ':common')
-    implementation files('src/libs/weka.jar')
+    implementation files('src/libs/weka-android-3-8-1.jar')
 }
