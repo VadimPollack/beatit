@@ -46,14 +46,14 @@ public class ModelHandler {
     private final Attribute attributeAttr9_Min = new Attribute("Attr9_Min");
     private final List<String> ClassesSmoking = new ArrayList<String>(){
         {
-            add("NULL");
             add("smoking");
+            add("NULL");
         }
     };
     private final List<String> ClassesHandWashing = new ArrayList<String>(){
         {
-            add("NULL");
             add("handwashing");
+            add("NULL");
         }
     };
 

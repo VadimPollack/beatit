@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
+import java.util.StringJoiner;
 
 
 public class SensorDataManager
@@ -40,7 +40,9 @@ public class SensorDataManager
     private Sensor mSensorRoatationVector;
 
     private FileOutputStream fileStream;
+    private FileOutputStream fileStream2;
     private File file;
+    private File file2;
     private SimpleDateFormat formatTime;
 
     private double ACX;
@@ -137,6 +139,18 @@ public class SensorDataManager
 
                 Log.v("INFO", e.getMessage());
             }
+
+            file2 = new File(Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_MOVIES), DayTime + "__FEAT.txt");
+            //this.isStoragePermissionGranted();
+            file2.setWritable(true);
+            Log.v("INFO", file2.getAbsolutePath());
+            try {
+                file2.createNewFile();
+            } catch (IOException e) {
+
+                Log.v("INFO", e.getMessage());
+            }
         }
         isMonitoringStarted.setValue(true);
         return true;
@@ -213,6 +227,9 @@ public class SensorDataManager
             lMLModel = gModelHandler.getActiveMLModel();
             Ausgabe = lMLModel.predictSmoking(featureVector.mVector);
 
+            String FeatureString = Ausgabe + " " + dblarr2str(featureVector.mVector)+"\n";
+            writeToFile2(FeatureString);
+
             ClassificationsBufferString[ClasBufInd] = Ausgabe;
             ClassificationsBuffer[ClasBufInd]= !Ausgabe.equals("NULL");
             for(boolean b : ClassificationsBuffer) {
@@ -266,6 +283,15 @@ public class SensorDataManager
             Log.v("INFO", e.getMessage());
         }
     }
+    private void writeToFile2(String line) {
+        try {
+            fileStream2 = new FileOutputStream(file2, true);
+            fileStream2.write(line.getBytes());
+            fileStream2.close();
+        } catch (Exception e) {
+            Log.v("INFO", e.getMessage());
+        }
+    }
 
     private void smokingEventDetected(Date startDateAndTime, int duration) {
         for (OnSmokingEventDetectedListener listener : onSmokingEventDetectedListeners) {
@@ -305,4 +331,12 @@ public class SensorDataManager
             return true;
         }
     }*/
+    private String dblarr2str(double[] featureVector) {
+        StringJoiner sj = new StringJoiner(" ");
+
+        for (double feature : featureVector)
+            sj.add(Double.toString(feature));
+
+        return sj.toString();
+    }
 }
