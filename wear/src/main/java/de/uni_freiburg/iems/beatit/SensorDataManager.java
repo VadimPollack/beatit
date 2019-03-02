@@ -150,10 +150,7 @@ public class SensorDataManager
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        // getting the device Time.
-        /*Calendar calendar = Calendar.getInstance();
-        String time = formatTime.format(calendar.getTime());
-        time = formatTime.format(event.timestamp);*/
+
         long timeInMillis = (new Date()).getTime()
                 + (event.timestamp - System.nanoTime()) / 1000000L;
         Timestamp stamp = new Timestamp(timeInMillis);
@@ -215,21 +212,6 @@ public class SensorDataManager
 
             lMLModel = gModelHandler.getActiveMLModel();
             Ausgabe = lMLModel.predictSmoking(featureVector.mVector);
-            Ausgabe2 = "Team2_" + Ausgabe;
-
-/*ToDo DaGy
-            Intent intent = new Intent();
-            intent.setAction("de.uni_freiburg.iems.beatit");
-            intent.putExtra("StartTime", (new Timestamp(SensorTimeStamp)).toString());
-            intent.putExtra("StopTime", (new Timestamp(StartTimeStamp)).toString());
-            intent.putExtra("SenderInfo", Ausgabe2);
-              Intent intent = new Intent();
-                intent.setAction("de.uni_freiburg.iems.beatit");
-                intent.putExtra("StartTime", (new Timestamp(StartTimeStamp)).toString());
-                intent.putExtra("StopTime", (new Timestamp(StopTimeStamp)).toString());
-                intent.putExtra("SenderInfo", Ausgabe2);
-
-            context.sendBroadcast(intent);*/
 
             ClassificationsBufferString[ClasBufInd] = Ausgabe;
             ClassificationsBuffer[ClasBufInd]= !Ausgabe.equals("NULL");
@@ -288,6 +270,11 @@ public class SensorDataManager
     private void smokingEventDetected(Date startDateAndTime, int duration) {
         for (OnSmokingEventDetectedListener listener : onSmokingEventDetectedListeners) {
             listener.onSmokingEventDetected(startDateAndTime, duration);
+        }
+    }
+    public void simulateSmokingEventDetected() {
+        for (OnSmokingEventDetectedListener listener : onSmokingEventDetectedListeners) {
+            listener.onSmokingEventDetected(new Date(), 120000);
         }
     }
 

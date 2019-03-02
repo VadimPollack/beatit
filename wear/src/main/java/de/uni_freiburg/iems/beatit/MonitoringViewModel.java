@@ -20,10 +20,6 @@ public class MonitoringViewModel extends AndroidViewModel {
         mSensorDataManager = SensorDataManager.getInstance(application);
         mDataSync = new ConnectionClass(application);
         mdataManager = DiaryDataManager.getInstance(application);
-        IntentFilter filter = new IntentFilter("de.uni_freiburg.iems.beatit");
-
-        application.registerReceiver(mDataSync, filter);
-
     }
 
     public LiveData<Boolean> getIsMonitoringStarted() {
@@ -33,6 +29,7 @@ public class MonitoringViewModel extends AndroidViewModel {
     public void startMonitoring() {
         mDataSync.sendData(mdataManager);
         if (mSensorDataManager.isMonitoringStarted.getValue()) return;
+
         mSensorDataManager.startSensorMonitoring();
 
     }

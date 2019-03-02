@@ -15,25 +15,26 @@ public class MainActivityViewModel extends AndroidViewModel {
     public MainActivityViewModel(@NonNull Application application) {
         super(application);
         mSensorDataManager = SensorDataManager.getInstance(application);
-        mSensorDataManager.addOnSmokingEventDetectedListener(durationInMilliseconds -> {
-            DiaryRecord newRecord = new DiaryRecord(Calendar.getInstance().getTime(),
+        mSensorDataManager.addOnSmokingEventDetectedListener((startDateAndTime, durationInMiliseconds) -> {
+            DiaryRecord newRecord = new DiaryRecord(
+                    DiaryRecord.Source.MACHINE,
+                    startDateAndTime,
                     TimeZone.getDefault().getID(),
-                    durationInMilliseconds);
-            DiaryDataManager.getInstance(application).insert(newRecord );
+                    durationInMiliseconds);
+            DiaryDataManager.getInstance(application).insert(newRecord);
             mListener.onSmokingEventDetected(newRecord);
         });
-
     }
 
-    public void simulateSmokingEventDetected(){
-        mSensorDataManager.SimulateSmokingEventDetected();
+    public void simulateSmokingEventDetected() {
+        mSensorDataManager.simulateSmokingEventDetected();
     }
 
-    public void setOnSmokingEventDetectedListener(onSmokingEventDetectedListener listener){
+    public void setOnSmokingEventDetectedListener(onSmokingEventDetectedListener listener) {
         mListener = listener;
     }
 
-    interface onSmokingEventDetectedListener{
+    interface onSmokingEventDetectedListener {
         void onSmokingEventDetected(DiaryRecord record);
     }
 }

@@ -71,7 +71,7 @@ public class DiaryView extends Fragment
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 diaryViewModel.delete(adapter.getDiaryRecordAt(viewHolder.getAdapterPosition()));
-                Toast.makeText(getActivity(), "Note deleted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Record deleted", Toast.LENGTH_SHORT).show();
             }
         }).attachToRecyclerView(recyclerView);
 

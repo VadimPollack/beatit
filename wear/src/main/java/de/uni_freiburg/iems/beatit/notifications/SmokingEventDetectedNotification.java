@@ -49,7 +49,7 @@ public class SmokingEventDetectedNotification {
 
         // Build intent for "No" action button
         Intent noIntent = new Intent(mContext, SmokeEventDetectedIntentService.class);
-        yesIntent.putExtra("ID", record.recordId);
+        yesIntent.putExtra("ID", mDiaryRecord.recordId);
         noIntent.setAction(SmokeEventDetectedIntentService.ACTION_NO);
         PendingIntent noPendingIntent = PendingIntent.getService(mContext, 0, noIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Action noAction =
@@ -73,7 +73,7 @@ public class SmokingEventDetectedNotification {
 
         //Building notification layout
         NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(mContext, NotificationUtil.createNotificationChannel(context))
+                new NotificationCompat.Builder(mContext, NotificationUtil.createNotificationChannel(mContext))
                         .setStyle(bigTextStyle)
                         .setSmallIcon(R.drawable.ic_cigarette_black_24dp)
                         //.setContentTitle("Smoking?")
