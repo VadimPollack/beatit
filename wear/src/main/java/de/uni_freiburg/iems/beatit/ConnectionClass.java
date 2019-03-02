@@ -38,7 +38,7 @@ import java.util.Locale;
 
 import de.uni_freiburg.iems.beatit.notifications.NotificationUtil;
 import de.uni_freiburg.iems.beatit.notifications.SmokeEventDetectedIntentService;
-import weka.core.pmml.jaxbbindings.True;
+//import weka.core.pmml.jaxbbindings.True;
 
 
 public class ConnectionClass extends BroadcastReceiver implements
