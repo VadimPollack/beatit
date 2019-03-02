@@ -51,7 +51,7 @@ public class cli implements Callable<Void> {
     private File file = new File("-");
 
     @CommandLine.Option(names = {"-n", "--duration"}, description = "number of samples to merge")
-    private Integer windowlength = 200;
+    private Integer windowlength = 1000;
 
     public static void main(String[] args) {
         CommandLine.call(new cli(), args);
@@ -273,8 +273,8 @@ public class cli implements Callable<Void> {
                 newInstance.setValue(attributeAttr9_Mean, featureVector.mVector[24] );
                 newInstance.setValue(attributeAttr9_Max, featureVector.mVector[25] );
                 newInstance.setValue(attributeAttr9_Min, featureVector.mVector[26] );
-                double result = mClassifier.classifyInstance(newInstance);
-                String className = Classes.get(new Double(result).intValue());
+               // double result = mClassifier.classifyInstance(newInstance);
+               // String className = Classes.get(new Double(result).intValue());
 
                 csvWriter.writeNext(new String[]{featureVector.mLabel.concat(SEPARATOR.concat(dblarr2str(featureVector.mVector)))});//, className});
 
