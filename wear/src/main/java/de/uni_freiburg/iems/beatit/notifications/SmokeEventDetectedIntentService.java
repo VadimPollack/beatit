@@ -28,7 +28,7 @@ public class SmokeEventDetectedIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Log.d(TAG, "onHandleIntent(): " + intent);
 
-        long id = intent.getLongExtra("ID", 0);
+        String id = intent.getStringExtra("ID");
         DiaryDataManager dataManager = DiaryDataManager.getInstance(getApplication());
         DiaryRecord currentRecord = dataManager.getRecordById(id);
 
@@ -43,7 +43,7 @@ public class SmokeEventDetectedIntentService extends IntentService {
         }
 
         dataManager.update(currentRecord);
-        dismissNotification((int)id);
+        dismissNotification(SmokingEventDetectedNotification.getNotificationIdFromUUID(id));
     }
 
     private void dismissNotification(int id) {

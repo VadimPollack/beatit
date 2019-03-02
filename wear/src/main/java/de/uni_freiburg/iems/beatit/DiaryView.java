@@ -94,7 +94,7 @@ public class DiaryView extends Fragment
             Date currentDate = Calendar.getInstance().getTime();
             String timeZone = TimeZone.getDefault().getID();
             int duration = (int) TimeUnit.MINUTES.toMillis(3);
-            diaryViewModel.insert(new DiaryRecord(currentDate, timeZone, duration));
+            diaryViewModel.insert(new DiaryRecord(DiaryRecord.Source.USER, currentDate, timeZone, duration));
         });
     }
 

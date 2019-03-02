@@ -32,16 +32,8 @@ import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
-import de.uni_freiburg.iems.beatit.notifications.NotificationUtil;
-import de.uni_freiburg.iems.beatit.notifications.SmokeEventDetectedIntentService;
-import weka.core.pmml.jaxbbindings.True;
-
-
-public class ConnectionClass extends BroadcastReceiver implements
+public class ConnectionClass implements
         DataClient.OnDataChangedListener,
         MessageClient.OnMessageReceivedListener,
         CapabilityClient.OnCapabilityChangedListener {
@@ -56,32 +48,16 @@ public class ConnectionClass extends BroadcastReceiver implements
     }
 
     int count = 0;
+
     public void sendData(DiaryDataManager mDatamanager) {
-        task =  new SyncDataAsyncTask(mDatamanager);
+        task = new SyncDataAsyncTask(mDatamanager);
         task.execute();
-    }
-
-    @Override
-    public void onReceive(Context context, Intent intent) {
-
-        Log.v("Intent", intent.getAction().toString());
-        String StartTime = intent.getStringExtra("StartTime");
-        String StopTime = intent.getStringExtra("StopTime");
-        String SenderInfo = intent.getStringExtra("SenderInfo");
-        DiaryRecord record = new DiaryRecord(new Date(), "Hallo", 5);
-        if ( SenderInfo.equals("Team2_smoking") ) {
-            showOnSmokingEventDetectedNotification(record);
-        }
-        Log.v("StartTime", StartTime);
-        Log.v("StopTime", StopTime);
-        Log.v("SenderInfo", SenderInfo);
-
     }
 
     private class SyncDataAsyncTask extends AsyncTask<DiaryRecord, Void, Void> {
         private DiaryDataManager mDatamanager;
 
-        private SyncDataAsyncTask( DiaryDataManager mDatamanager) {
+        private SyncDataAsyncTask(DiaryDataManager mDatamanager) {
             this.mDatamanager = mDatamanager;
         }
 
@@ -91,15 +67,14 @@ public class ConnectionClass extends BroadcastReceiver implements
             final String RECORDID_KEY = "com.example.recordId.record";
             final String TIMEZONE_KEY = "com.example.timeZone.record";
             final String STARTDAT_KEY = "com.example.startDateAndTime.record";
-            final String LABEL_KEY    = "com.example.userLabel.record";
-            final String RECORD_KEY    = "com.example.record.record";
+            final String LABEL_KEY = "com.example.userLabel.record";
+            final String RECORD_KEY = "com.example.record.record";
             //final String COUNT_KEY = "com.example.key.count";
 
-            Log.v("Connect","SendData");
+            Log.v("Connect", "SendData");
 
             PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/record");
-            try
-            {
+            try {
                 for (DiaryRecord mRecord : mDatamanager.getDiarySync()) {
                     DataMap map = new DataMap();
                     map.putInt(DURATION_KEY, mRecord.duration);
@@ -168,84 +143,4 @@ public class ConnectionClass extends BroadcastReceiver implements
     }
 
 
-
-    private void showOnSmokingEventDetectedNotification(DiaryRecord record) {
-
-        // Build intent for notification content
-        Intent viewIntent = new Intent(context, ConnectionClass.class);
-        PendingIntent viewPendingIntent =
-                PendingIntent.getActivity(
-                        context,
-                        0,
-                        viewIntent,
-                        0); // nachschauen!
-
-        // Build intent for "Yes" action button
-        Intent yesIntent = new Intent(context, SmokeEventDetectedIntentService.class);
-        yesIntent.setAction(SmokeEventDetectedIntentService.ACTION_YES);
-        yesIntent.putExtra("ID", record.recordId);
-        PendingIntent yesPendingIntent = PendingIntent.getService(context, 0, yesIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        NotificationCompat.Action yesAction =
-                new NotificationCompat.Action.Builder(
-                        R.drawable.ic_cigarette_black_24dp,
-                        "Yes",
-                        yesPendingIntent)
-                        .build();
-
-        // Build intent for "No" action button
-        Intent noIntent = new Intent(context, SmokeEventDetectedIntentService.class);
-        yesIntent.putExtra("ID", record.recordId);
-        noIntent.setAction(SmokeEventDetectedIntentService.ACTION_NO);
-        PendingIntent noPendingIntent = PendingIntent.getService(context, 0, noIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        NotificationCompat.Action noAction =
-                new NotificationCompat.Action.Builder(
-                        R.drawable.ic_crossed_cigarette_black_24dp,
-                        "No",
-                        noPendingIntent)
-                        .build();
-
-        // 2. Build the BIG_TEXT_STYLE
-        DateFormat df = new SimpleDateFormat("EEEE, d MMM, HH:mm", Locale.ENGLISH);
-        NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle()
-                // Overrides ContentText in the big form of the template.
-                .bigText("@ " + df.format(record.startDateAndTime) + " ?")
-                // Overrides ContentTitle in the big form of the template.
-                .setBigContentTitle("Did you smoke ")
-                // Summary line after the detail section in the big form of the template
-                // Note: To improve readability, don't overload the user with info. If Summary Text
-                // doesn't add critical information, you should skip it.
-                .setSummaryText("Summary");
-
-        //Building notification layout
-        NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(context, NotificationUtil.createNotificationChannel(context))
-                        .setStyle(bigTextStyle)
-                        .setSmallIcon(R.drawable.ic_cigarette_black_24dp)
-                        //.setContentTitle("Smoking?")
-                        //.setContentText("We detected that you're smoking. Is this correct?")
-                        .setDefaults(NotificationCompat.DEFAULT_ALL)
-                        .setCategory(Notification.CATEGORY_REMINDER)
-                        .setPriority(NotificationCompat.PRIORITY_MAX)
-                        .setColor(ContextCompat.getColor(context.getApplicationContext(), R.color.colorPrimaryDark))
-                        .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
-                        //.setContentIntent(viewPendingIntent)
-                        .addAction(yesAction)
-                        .addAction(noAction);
-
-        // Enables launching app in Wear 2.0 while keeping the old Notification Style behavior.
-        NotificationCompat.Action mainAction = new NotificationCompat.Action.Builder(
-                R.drawable.open_on_phone,
-                "Open",
-                viewPendingIntent)
-                .build();
-
-        notificationBuilder.addAction(mainAction);
-
-        // instance of the NotificationManager service
-        NotificationManagerCompat notificationManager =
-                NotificationManagerCompat.from(context);
-
-        // Build the notification and notify it using notification manager.
-        notificationManager.notify((int) record.recordId, notificationBuilder.build());
-    }
 }

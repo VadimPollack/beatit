@@ -28,5 +28,5 @@ public interface DiaryRecordDao {
     List<DiaryRecord> getDiarySyncRecord();
 
     @Query("SELECT * FROM diary_table WHERE record_id = :id ")
-    DiaryRecord getRecordById(long id);
+    DiaryRecord getRecordById(String id);
 }
