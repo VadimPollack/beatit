@@ -1,12 +1,7 @@
 package de.uni_freiburg.iems.beatit;
 
-import android.Manifest;
-import android.app.Application;
 import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -15,10 +10,9 @@ import android.icu.text.DecimalFormat;
 import android.icu.text.NumberFormat;
 import android.icu.text.SimpleDateFormat;
 import android.os.Environment;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.widget.TextView;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -63,7 +57,7 @@ public class SensorDataManager
 
     private static SensorDataManager instance;
     private SegFeatWear segFeat = null;
-    private Integer windowlength= 200;
+    private Integer windowlength = 200;
     private long SensorTimeStamp = 0;
     private long StartTimeStamp = 0;
 
@@ -83,7 +77,7 @@ public class SensorDataManager
         isMonitoringStarted.setValue(false);
         onSmokingEventDetectedListeners = new ArrayList<>();
         gModelHandler = ModelHandler.getInstance();
-        gModelHandler.changeModel(context,"RF_9Attr.model");
+        gModelHandler.changeModel(context, "RF_9Attr.model");
     }
 
     /**
@@ -95,7 +89,7 @@ public class SensorDataManager
         mSensorManager = (SensorManager) this.context.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
 
         mSensorAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mSensorManager.registerListener(this, mSensorAccelerometer,20000);
+        mSensorManager.registerListener(this, mSensorAccelerometer, 20000);
 
         mSensorGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         mSensorManager.registerListener(this, mSensorGyroscope, 20000);
@@ -116,7 +110,7 @@ public class SensorDataManager
                     .setWindowSize(windowlength)
                     .setSampleSize(9)
                     .build();
-        }catch(Exception e){
+        } catch (Exception e) {
             //doSomething
         }
         // Create an File in an external storage
@@ -166,7 +160,7 @@ public class SensorDataManager
 
         Log.v("SensorTimeStamp1", stamp.toString());
         Log.v("SensorTimeStamp2", (new Long(timeInMillis)).toString());
-        Log.v("Sensor",event.sensor.getName());
+        Log.v("Sensor", event.sensor.getName());
 
         if (timeInMillis > SensorTimeStamp) {
 
@@ -214,13 +208,15 @@ public class SensorDataManager
             Ausgabe = lMLModel.predictSmoking(featureVector.mVector);
             Ausgabe2 = "Team2_" + Ausgabe;
 
+            smokingEventDetected(new Date(SensorTimeStamp), (int)(StartTimeStamp - SensorTimeStamp));
+/*ToDo DaGy
             Intent intent = new Intent();
             intent.setAction("de.uni_freiburg.iems.beatit");
             intent.putExtra("StartTime", (new Timestamp(SensorTimeStamp)).toString());
             intent.putExtra("StopTime", (new Timestamp(StartTimeStamp)).toString());
             intent.putExtra("SenderInfo", Ausgabe2);
 
-            context.sendBroadcast(intent);
+            context.sendBroadcast(intent);*/
 
             StartTimeStamp = SensorTimeStamp;
 
@@ -261,17 +257,19 @@ public class SensorDataManager
         }
     }
 
-    public void SimulateSmokingEventDetected() {
-        for (OnSmokingEventDetectedListener listener:onSmokingEventDetectedListeners) {
-            listener.onSmokingEventDetected( 3000);
+    private void smokingEventDetected(Date startDateAndTime, int duration) {
+        for (OnSmokingEventDetectedListener listener : onSmokingEventDetectedListeners) {
+            listener.onSmokingEventDetected(startDateAndTime, duration);
         }
     }
-    public void addOnSmokingEventDetectedListener(OnSmokingEventDetectedListener listener){
+
+    public void addOnSmokingEventDetectedListener(OnSmokingEventDetectedListener listener) {
         onSmokingEventDetectedListeners.add(listener);
     }
 
+
     public interface OnSmokingEventDetectedListener {
-        void onSmokingEventDetected(int durationInMiliseconds);
+        void onSmokingEventDetected(Date startDateAndTime, int durationInMiliseconds);
     }
 
 /*    public  boolean isStoragePermissionGranted() {
