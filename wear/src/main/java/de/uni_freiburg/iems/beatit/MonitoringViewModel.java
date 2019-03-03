@@ -4,8 +4,9 @@ import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.content.Context;
-import android.content.IntentFilter;
 import android.support.annotation.NonNull;
+
+import java.util.TimeZone;
 
 public class MonitoringViewModel extends AndroidViewModel {
 
@@ -13,6 +14,7 @@ public class MonitoringViewModel extends AndroidViewModel {
     private ConnectionClass mDataSync;
     private DiaryDataManager mdataManager;
     private ModelHandler mModelHandler;
+    private onSmokingEventDetectedListener mSmokingEventListener;
 
     public MonitoringViewModel(@NonNull Application application) {
         super(application);
@@ -27,15 +29,24 @@ public class MonitoringViewModel extends AndroidViewModel {
     }
 
     public void startMonitoring() {
-        mDataSync.sendData(mdataManager);
+        //mDataSync.sendData(mdataManager);
         if (mSensorDataManager.isMonitoringStarted.getValue()) return;
+        mSensorDataManager.setOnSmokingEventDetectedListener((startDateAndTime, durationInMilliseconds) -> {
+            DiaryRecord newRecord = new DiaryRecord(
+                    DiaryRecord.Source.MACHINE,
+                    startDateAndTime,
+                    TimeZone.getDefault().getID(),
+                    durationInMilliseconds);
+            mdataManager.insert(newRecord);
+            mSmokingEventListener.onSmokingEventDetected(newRecord);
+        });
 
         mSensorDataManager.startSensorMonitoring();
-
     }
 
     public void stopMonitoring() {
         if (!mSensorDataManager.isMonitoringStarted.getValue()) return;
+        mSensorDataManager.removeOnSmokingEventDetectedListener();
         mSensorDataManager.stopSensorMonitoring();
     }
 
@@ -55,5 +66,13 @@ public class MonitoringViewModel extends AndroidViewModel {
                 ModelName = "RF__6Attr.model";
         }
         mModelHandler.changeModel(modelContext,ModelName);
+    }
+
+    public void setOnSmokingEventDetectedListener(onSmokingEventDetectedListener listener) {
+        mSmokingEventListener = listener;
+    }
+
+    interface onSmokingEventDetectedListener {
+        void onSmokingEventDetected(DiaryRecord record);
     }
 }

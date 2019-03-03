@@ -61,30 +61,14 @@ public class MainActivity extends AppCompatActivity implements
         mWearableNavigationDrawer.setAdapter(new NavigationAdapter(this));
         mWearableNavigationDrawer.addOnItemSelectedListener(this);
 
-        //initialize notification manager
+
         viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
-        viewModel.setOnSmokingEventDetectedListener((record) -> {
-            new SmokingEventDetectedNotification(this, record).show();
-
-            sendGlobalIntent(record.startDateAndTime.getTime(), record.startDateAndTime.getTime() + record.duration);
-
-        });
-
 
         final Fragment startFragment = MonitoringView.newInstance();
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container, startFragment)
                 .commit();
-    }
-
-    private void sendGlobalIntent(long startTime, long stopTime) {
-        Intent intent = new Intent();
-        intent.setAction("de.uni_freiburg.iems.beatit");
-        intent.putExtra("StartTime", (new Timestamp(startTime)).toString());
-        intent.putExtra("StopTime", (new Timestamp(stopTime)).toString());
-        intent.putExtra("SenderInfo", "TEAM2_SMOKING_DETECTED");
-        this.sendBroadcast(intent);
     }
 
     //---------------------Navigation Drawer--------------------------------------

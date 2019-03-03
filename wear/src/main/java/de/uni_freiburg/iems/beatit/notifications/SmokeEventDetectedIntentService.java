@@ -32,18 +32,21 @@ public class SmokeEventDetectedIntentService extends IntentService {
         DiaryDataManager dataManager = DiaryDataManager.getInstance(getApplication());
         DiaryRecord currentRecord = dataManager.getRecordById(id);
 
-
-        if (intent != null) {
-            final String action = intent.getAction();
-            if (ACTION_YES.equals(action)) {
-                currentRecord.userLabel = DiaryRecord.Label.SMOKING;
-            } else if (ACTION_NO.equals(action)) {
-                currentRecord.userLabel = DiaryRecord.Label.NOT_SMOKING;
+        try {
+            if (intent != null) {
+                final String action = intent.getAction();
+                if (ACTION_YES.equals(action)) {
+                    currentRecord.userLabel = DiaryRecord.Label.SMOKING;
+                } else if (ACTION_NO.equals(action)) {
+                    currentRecord.userLabel = DiaryRecord.Label.NOT_SMOKING;
+                }
             }
-        }
 
         dataManager.update(currentRecord);
         dismissNotification(SmokingEventDetectedNotification.getNotificationIdFromUUID(id));
+        } catch (Exception e) {
+            Log.d(TAG, "Didn't find element with ID = " + id);
+        }
     }
 
     private void dismissNotification(int id) {

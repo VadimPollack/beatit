@@ -17,10 +17,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.StringJoiner;
 
 
@@ -29,7 +27,7 @@ public class SensorDataManager
 
     public MutableLiveData<Boolean> isMonitoringStarted;
 
-    private List<OnSmokingEventDetectedListener> onSmokingEventDetectedListeners;
+    private OnSmokingEventDetectedListener onSmokingEventDetectedListener;
 
     private SensorManager mSensorManager;
     private Sensor mSensorGyroscope;
@@ -61,7 +59,7 @@ public class SensorDataManager
 
     private static SensorDataManager instance;
     private SegFeatWear segFeat = null;
-    private Integer windowlength= 1000;
+    private Integer windowlength = 1000;
     private long SensorTimeStamp = 0;
     private long StartTimeStamp = 0;
     private long StopTimeStamp = 0;
@@ -84,9 +82,9 @@ public class SensorDataManager
         formatTime = new SimpleDateFormat("HH:mm:ss");
         isMonitoringStarted = new MutableLiveData<>();
         isMonitoringStarted.setValue(false);
-        onSmokingEventDetectedListeners = new ArrayList<>();
+        onSmokingEventDetectedListener = null;
         gModelHandler = ModelHandler.getInstance();
-        gModelHandler.changeModel(context,"RF__6Attr.model");
+        gModelHandler.changeModel(context, "RF__6Attr.model");
     }
 
     /**
@@ -119,7 +117,7 @@ public class SensorDataManager
                     .setWindowSize(windowlength)
                     .setSampleSize(9)
                     .build();
-        }catch(Exception e){
+        } catch (Exception e) {
             //doSomething
         }
         // Create an File in an external storage
@@ -222,24 +220,24 @@ public class SensorDataManager
         if (featureVector != null) {
             ModelHandler.MLModel lMLModel;
             String Ausgabe, Ausgabe2;
-            Integer ClassifiedAs= 0;
+            Integer ClassifiedAs = 0;
 
             lMLModel = gModelHandler.getActiveMLModel();
             Ausgabe = lMLModel.predictSmoking(featureVector.mVector);
 
-            String FeatureString = Ausgabe + " " + dblarr2str(featureVector.mVector)+"\n";
+            String FeatureString = Ausgabe + " " + dblarr2str(featureVector.mVector) + "\n";
             writeToFile2(FeatureString);
 
             ClassificationsBufferString[ClasBufInd] = Ausgabe;
-            ClassificationsBuffer[ClasBufInd]= !Ausgabe.equals("NULL");
-            for(boolean b : ClassificationsBuffer) {
+            ClassificationsBuffer[ClasBufInd] = !Ausgabe.equals("NULL");
+            for (boolean b : ClassificationsBuffer) {
                 ClassifiedAs += b ? 1 : 0;
             }
-            if(ClassifiedAs>7 && !SmokingDetected) {
+            if (ClassifiedAs > 7 && !SmokingDetected) {
                 StartTimeStamp = SensorTimeStamp;
                 SmokingDetected = true;
             }
-            if(ClassifiedAs<=7 && SmokingDetected) {
+            if (ClassifiedAs <= 7 && SmokingDetected) {
                 StopTimeStamp = SensorTimeStamp;
                 SmokingDetected = false;
 
@@ -283,6 +281,7 @@ public class SensorDataManager
             Log.v("INFO", e.getMessage());
         }
     }
+
     private void writeToFile2(String line) {
         try {
             fileStream2 = new FileOutputStream(file2, true);
@@ -294,18 +293,20 @@ public class SensorDataManager
     }
 
     private void smokingEventDetected(Date startDateAndTime, int duration) {
-        for (OnSmokingEventDetectedListener listener : onSmokingEventDetectedListeners) {
-            listener.onSmokingEventDetected(startDateAndTime, duration);
-        }
-    }
-    public void simulateSmokingEventDetected() {
-        for (OnSmokingEventDetectedListener listener : onSmokingEventDetectedListeners) {
-            listener.onSmokingEventDetected(new Date(), 120000);
-        }
+        if (onSmokingEventDetectedListener != null)
+            onSmokingEventDetectedListener.onSmokingEventDetected(startDateAndTime, duration);
     }
 
-    public void addOnSmokingEventDetectedListener(OnSmokingEventDetectedListener listener) {
-        onSmokingEventDetectedListeners.add(listener);
+    public void simulateSmokingEventDetected() {
+       smokingEventDetected(new Date(), 120000);
+    }
+
+    public void setOnSmokingEventDetectedListener(OnSmokingEventDetectedListener listener) {
+        onSmokingEventDetectedListener = listener;
+    }
+
+    public void removeOnSmokingEventDetectedListener() {
+        onSmokingEventDetectedListener = null;
     }
 
 
@@ -313,24 +314,24 @@ public class SensorDataManager
         void onSmokingEventDetected(Date startDateAndTime, int durationInMiliseconds);
     }
 
-/*    public  boolean isStoragePermissionGranted() {
+    /*    public  boolean isStoragePermissionGranted() {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (context.getApplicationContext().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (context.getApplicationContext().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    Log.v("INFO","Permission is granted");
+                    return true;
+                } else {
+                    Log.v("INFO","Permission is revoked");
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                    return false;
+                }
+            }
+            else { //permission is automatically granted on sdk<23 upon installation
                 Log.v("INFO","Permission is granted");
                 return true;
-            } else {
-                Log.v("INFO","Permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                return false;
             }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
-            Log.v("INFO","Permission is granted");
-            return true;
-        }
-    }*/
+        }*/
     private String dblarr2str(double[] featureVector) {
         StringJoiner sj = new StringJoiner(" ");
 
