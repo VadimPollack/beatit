@@ -12,6 +12,7 @@ import android.icu.text.SimpleDateFormat;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.os.PowerManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,7 +29,8 @@ public class SensorDataManager
     public MutableLiveData<Boolean> isMonitoringStarted;
 
     private OnSmokingEventDetectedListener onSmokingEventDetectedListener;
-
+    private PowerManager mPowerManager;
+    private PowerManager.WakeLock mWakeLock;
     private SensorManager mSensorManager;
     private Sensor mSensorGyroscope;
     private Sensor mSensorAccelerometer;
@@ -36,6 +38,7 @@ public class SensorDataManager
     private Sensor mSensorMagneticField;
     private Sensor mSensorPressure;
     private Sensor mSensorRoatationVector;
+    private Sensor mSegnificantMotion;
 
     private FileOutputStream fileStream;
     private FileOutputStream fileStream2;
@@ -65,8 +68,8 @@ public class SensorDataManager
     private long StopTimeStamp = 0;
 
     private ModelHandler gModelHandler;
-    private String ClassificationsBufferString[] = new String[18];
-    private boolean[] ClassificationsBuffer = new boolean[18];
+    private String ClassificationsBufferString[] = new String[6];
+    private boolean[] ClassificationsBuffer = new boolean[6];
     private int ClasBufInd = 0;
     private boolean SmokingDetected = false;
 
@@ -85,6 +88,9 @@ public class SensorDataManager
         onSmokingEventDetectedListener = null;
         gModelHandler = ModelHandler.getInstance();
         gModelHandler.changeModel(context, "RF__6Attr.model");
+        mPowerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        mWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SensorDataManager:SDM");
+
     }
 
     /**
@@ -93,10 +99,11 @@ public class SensorDataManager
      * @return true if start was successful.
      */
     public boolean startSensorMonitoring() {
+        mWakeLock.acquire();
         mSensorManager = (SensorManager) this.context.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
 
         mSensorAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mSensorManager.registerListener(this, mSensorAccelerometer, 20000);
+        mSensorManager.registerListener(this, mSensorAccelerometer,20000);
 
         mSensorGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         mSensorManager.registerListener(this, mSensorGyroscope, 20000);
@@ -110,7 +117,11 @@ public class SensorDataManager
 
         mSensorRoatationVector = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         mSensorManager.registerListener(this, mSensorRoatationVector, 20000);
-        */
+*/
+        mSegnificantMotion = mSensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION);
+        mSensorManager.registerListener(this, mSegnificantMotion,20000,20);
+
+
 
         try {
             segFeat = new SegFeatWear.Builder()
@@ -155,6 +166,7 @@ public class SensorDataManager
     }
 
     public boolean stopSensorMonitoring() {
+        mWakeLock.release();
         mSensorManager.unregisterListener(this);
         isMonitoringStarted.setValue(false);
         return true;
@@ -225,7 +237,7 @@ public class SensorDataManager
             lMLModel = gModelHandler.getActiveMLModel();
             Ausgabe = lMLModel.predictSmoking(featureVector.mVector);
 
-            String FeatureString = Ausgabe + " " + dblarr2str(featureVector.mVector) + "\n";
+            String FeatureString = Ausgabe + " " + dblarr2str(featureVector.mVector)+"\n" + (new Timestamp(System.currentTimeMillis())).toString() +"\n";
             writeToFile2(FeatureString);
 
             ClassificationsBufferString[ClasBufInd] = Ausgabe;
@@ -233,19 +245,19 @@ public class SensorDataManager
             for (boolean b : ClassificationsBuffer) {
                 ClassifiedAs += b ? 1 : 0;
             }
-            if (ClassifiedAs > 7 && !SmokingDetected) {
-                StartTimeStamp = SensorTimeStamp;
+            if(ClassifiedAs>3 && !SmokingDetected) {
+                StartTimeStamp = SensorTimeStamp*10;
                 SmokingDetected = true;
             }
-            if (ClassifiedAs <= 7 && SmokingDetected) {
-                StopTimeStamp = SensorTimeStamp;
+            if(ClassifiedAs<=3 && SmokingDetected) {
+                StopTimeStamp = SensorTimeStamp*10;
                 SmokingDetected = false;
 
                 smokingEventDetected(new Date(SensorTimeStamp), (int) (StartTimeStamp - SensorTimeStamp));
             }
 
             ClasBufInd++;
-            ClasBufInd %= 18;
+            ClasBufInd %= 6;
         }
 
 
@@ -314,24 +326,24 @@ public class SensorDataManager
         void onSmokingEventDetected(Date startDateAndTime, int durationInMiliseconds);
     }
 
-    /*    public  boolean isStoragePermissionGranted() {
+/*    public  boolean isStoragePermissionGranted() {
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (context.getApplicationContext().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        == PackageManager.PERMISSION_GRANTED) {
-                    Log.v("INFO","Permission is granted");
-                    return true;
-                } else {
-                    Log.v("INFO","Permission is revoked");
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                    return false;
-                }
-            }
-            else { //permission is automatically granted on sdk<23 upon installation
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (context.getApplicationContext().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
                 Log.v("INFO","Permission is granted");
                 return true;
+            } else {
+                Log.v("INFO","Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
             }
-        }*/
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.v("INFO","Permission is granted");
+            return true;
+        }
+    }*/
     private String dblarr2str(double[] featureVector) {
         StringJoiner sj = new StringJoiner(" ");
 
