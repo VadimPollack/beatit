@@ -311,7 +311,7 @@ public class SensorDataManager
 
 
     public interface OnSmokingEventDetectedListener {
-        void onSmokingEventDetected(int durationInMiliseconds);
+        void onSmokingEventDetected(Date startDateAndTime, int durationInMiliseconds);
     }
 
 /*    public  boolean isStoragePermissionGranted() {
