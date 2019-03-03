@@ -71,7 +71,7 @@ public class DiaryView extends Fragment
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 diaryViewModel.delete(adapter.getDiaryRecordAt(viewHolder.getAdapterPosition()));
-                Toast.makeText(getActivity(), "Note deleted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Record deleted", Toast.LENGTH_SHORT).show();
             }
         }).attachToRecyclerView(recyclerView);
 
@@ -94,7 +94,7 @@ public class DiaryView extends Fragment
             Date currentDate = Calendar.getInstance().getTime();
             String timeZone = TimeZone.getDefault().getID();
             int duration = (int) TimeUnit.MINUTES.toMillis(3);
-            diaryViewModel.insert(new DiaryRecord(currentDate, timeZone, duration));
+            diaryViewModel.insert(new DiaryRecord(DiaryRecord.Source.USER, currentDate, timeZone, duration));
         });
     }
 
