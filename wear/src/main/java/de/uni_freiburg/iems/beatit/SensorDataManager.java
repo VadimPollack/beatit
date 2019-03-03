@@ -73,8 +73,8 @@ public class SensorDataManager
     private long StopTimeStamp = 0;
 
     private ModelHandler gModelHandler;
-    private String ClassificationsBufferString[] = new String[18];
-    private boolean[] ClassificationsBuffer = new boolean[18];
+    private String ClassificationsBufferString[] = new String[6];
+    private boolean[] ClassificationsBuffer = new boolean[6];
     private int ClasBufInd = 0;
     private boolean SmokingDetected = false;
 
@@ -237,7 +237,7 @@ public class SensorDataManager
             Ausgabe = lMLModel.predictSmoking(featureVector.mVector);
             Ausgabe2 = "Team2_" + Ausgabe;
 
-            String FeatureString = Ausgabe + " " + dblarr2str(featureVector.mVector)+"\n";
+            String FeatureString = Ausgabe + " " + dblarr2str(featureVector.mVector)+"\n" + (new Timestamp(System.currentTimeMillis())).toString() +"\n";
             writeToFile2(FeatureString);
 
             ClassificationsBufferString[ClasBufInd] = Ausgabe;
@@ -245,12 +245,12 @@ public class SensorDataManager
             for(boolean b : ClassificationsBuffer) {
                 ClassifiedAs += b ? 1 : 0;
             }
-            if(ClassifiedAs>7 && !SmokingDetected) {
-                StartTimeStamp = SensorTimeStamp;
+            if(ClassifiedAs>3 && !SmokingDetected) {
+                StartTimeStamp = SensorTimeStamp*10;
                 SmokingDetected = true;
             }
-            if(ClassifiedAs<=7 && SmokingDetected) {
-                StopTimeStamp = SensorTimeStamp;
+            if(ClassifiedAs<=3 && SmokingDetected) {
+                StopTimeStamp = SensorTimeStamp*10;
                 SmokingDetected = false;
 
 
@@ -264,7 +264,7 @@ public class SensorDataManager
             }
 
             ClasBufInd++;
-            ClasBufInd %= 18;
+            ClasBufInd %= 6;
         }
 
 
