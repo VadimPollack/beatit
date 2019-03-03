@@ -13,7 +13,7 @@ import android.support.annotation.NonNull;
 import java.util.Date;
 
 
-@Database(entities = {DiaryRecord.class}, version = 1)
+@Database(entities = {DiaryRecord.class}, version = 2)
 public abstract class DiaryDatabase extends RoomDatabase {
 
     private static DiaryDatabase instance;
@@ -49,42 +49,44 @@ public abstract class DiaryDatabase extends RoomDatabase {
         @Override
         protected Void doInBackground(Void... voids) {
             Calendar cal = Calendar.getInstance();
-            recordDao.insert(new DiaryRecord(DiaryRecord.Label.SMOKING,
+            recordDao.insert(new DiaryRecord(DiaryRecord.Source.MACHINE,
+                    DiaryRecord.Label.SMOKING,
                     new Date(cal.getTimeInMillis()),
                     TimeZone.getDefault().getID(),
                     300000));
             cal.add(Calendar.HOUR_OF_DAY, -1);
-            recordDao.insert(new DiaryRecord(DiaryRecord.Label.NOT_SMOKING,
+            recordDao.insert(new DiaryRecord(DiaryRecord.Source.USER,
+                    DiaryRecord.Label.NOT_SMOKING,
                     new Date(cal.getTimeInMillis()),
             TimeZone.getDefault().getID(),
                     600000));
             cal.add(Calendar.HOUR_OF_DAY, -1);
             cal.add(Calendar.MINUTE, 27);
-            recordDao.insert(new DiaryRecord(
+            recordDao.insert(new DiaryRecord(DiaryRecord.Source.USER,
                     new Date(cal.getTimeInMillis()),
                     TimeZone.getDefault().getID(),
                     30000));
             cal.add(Calendar.HOUR_OF_DAY, -2);
             cal.add(Calendar.MINUTE, 30);
-            recordDao.insert(new DiaryRecord(
+            recordDao.insert(new DiaryRecord(DiaryRecord.Source.MACHINE,
                     new Date(cal.getTimeInMillis()),
                     TimeZone.getDefault().getID(),
                     490000));
             cal.add(Calendar.DAY_OF_MONTH, -1);
             cal.add(Calendar.MINUTE, 36);
-            recordDao.insert(new DiaryRecord(
+            recordDao.insert(new DiaryRecord(DiaryRecord.Source.USER,
                     new Date(cal.getTimeInMillis()),
                     TimeZone.getDefault().getID(),
                     80000));
             cal.add(Calendar.HOUR_OF_DAY, -10);
             cal.add(Calendar.MINUTE, 14);
-            recordDao.insert(new DiaryRecord(
+            recordDao.insert(new DiaryRecord(DiaryRecord.Source.USER,
                     new Date(cal.getTimeInMillis()),
                     TimeZone.getDefault().getID(),
                     110000));
             cal.add(Calendar.MONTH, -1);
             cal.add(Calendar.MINUTE, 30);
-            recordDao.insert(new DiaryRecord(
+            recordDao.insert(new DiaryRecord(DiaryRecord.Source.MACHINE,
                     new Date(cal.getTimeInMillis()),
                     TimeZone.getDefault().getID(),
                     260000));
