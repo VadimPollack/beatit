@@ -21,6 +21,7 @@
         android:layout_marginTop="15dp"
         android:layout_gravity="top|center_horizontal"
         app:elevation="6dp"
+        app:fabSize="auto"
         app:pressedTranslationZ="12dp"
         app:borderWidth="0dp"
         app:layout_behavior="de.uni_freiburg.iems.beatit.ScrollAwareFabBehavior"/>

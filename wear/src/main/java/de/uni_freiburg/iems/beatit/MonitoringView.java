@@ -1,6 +1,7 @@
 package de.uni_freiburg.iems.beatit;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,8 +14,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+
+import de.uni_freiburg.iems.beatit.notifications.SmokingEventDetectedNotification;
 
 public class MonitoringView extends Fragment {
 
@@ -37,7 +41,7 @@ public class MonitoringView extends Fragment {
         list.add("HandWashing");
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this.getContext(),
                 android.R.layout.simple_spinner_item, list.toArray(new String[0]));
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        dataAdapter.setDropDownViewResource(R.layout.monitoring_model_chooser_item);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -66,6 +70,23 @@ public class MonitoringView extends Fragment {
             if (isMonitoringStarted == null) return;
             startStopButton.setImageResource(chooseImageResource(isMonitoringStarted));
         });
+
+        monitoringViewModel = ViewModelProviders.of(this).get(MonitoringViewModel.class);
+        monitoringViewModel.setOnSmokingEventDetectedListener((record) -> {
+            new SmokingEventDetectedNotification(getContext(), record).show();
+
+            sendGlobalIntent(record.startDateAndTime.getTime(), record.startDateAndTime.getTime() + record.duration);
+        });
+
+    }
+
+    private void sendGlobalIntent(long startTime, long stopTime) {
+        Intent intent = new Intent();
+        intent.setAction("de.uni_freiburg.iems.beatit");
+        intent.putExtra("StartTime", (new Timestamp(startTime)).toString());
+        intent.putExtra("StopTime", (new Timestamp(stopTime)).toString());
+        intent.putExtra("SenderInfo", "TEAM2_SMOKING_DETECTED");
+        getContext().sendBroadcast(intent);
     }
 
     private void onStartStopButtonClicked() {
@@ -83,6 +104,4 @@ public class MonitoringView extends Fragment {
         else
             return R.drawable.ic_monitoring_white_24dp;
     }
-
-
 }

@@ -50,7 +50,7 @@ public class DiaryDataManager {
         return recordDao.getDiarySyncRecord();
     }
 
-    public DiaryRecord getRecordById(long id) {
+    public DiaryRecord getRecordById(String id) {
 
         return recordDao.getRecordById(id);
     }

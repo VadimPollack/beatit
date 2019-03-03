@@ -1,12 +1,7 @@
 package de.uni_freiburg.iems.beatit;
 
-import android.Manifest;
-import android.app.Application;
 import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -15,18 +10,15 @@ import android.icu.text.DecimalFormat;
 import android.icu.text.NumberFormat;
 import android.icu.text.SimpleDateFormat;
 import android.os.Environment;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.widget.TextView;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.StringJoiner;
 
 
@@ -35,7 +27,7 @@ public class SensorDataManager
 
     public MutableLiveData<Boolean> isMonitoringStarted;
 
-    private List<OnSmokingEventDetectedListener> onSmokingEventDetectedListeners;
+    private OnSmokingEventDetectedListener onSmokingEventDetectedListener;
 
     private SensorManager mSensorManager;
     private Sensor mSensorGyroscope;
@@ -67,7 +59,7 @@ public class SensorDataManager
 
     private static SensorDataManager instance;
     private SegFeatWear segFeat = null;
-    private Integer windowlength= 1000;
+    private Integer windowlength = 1000;
     private long SensorTimeStamp = 0;
     private long StartTimeStamp = 0;
     private long StopTimeStamp = 0;
@@ -90,9 +82,9 @@ public class SensorDataManager
         formatTime = new SimpleDateFormat("HH:mm:ss");
         isMonitoringStarted = new MutableLiveData<>();
         isMonitoringStarted.setValue(false);
-        onSmokingEventDetectedListeners = new ArrayList<>();
+        onSmokingEventDetectedListener = null;
         gModelHandler = ModelHandler.getInstance();
-        gModelHandler.changeModel(context,"RF__6Attr.model");
+        gModelHandler.changeModel(context, "RF__6Attr.model");
     }
 
     /**
@@ -104,7 +96,7 @@ public class SensorDataManager
         mSensorManager = (SensorManager) this.context.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
 
         mSensorAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mSensorManager.registerListener(this, mSensorAccelerometer,20000);
+        mSensorManager.registerListener(this, mSensorAccelerometer, 20000);
 
         mSensorGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         mSensorManager.registerListener(this, mSensorGyroscope, 20000);
@@ -125,7 +117,7 @@ public class SensorDataManager
                     .setWindowSize(windowlength)
                     .setSampleSize(9)
                     .build();
-        }catch(Exception e){
+        } catch (Exception e) {
             //doSomething
         }
         // Create an File in an external storage
@@ -170,10 +162,7 @@ public class SensorDataManager
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        // getting the device Time.
-        /*Calendar calendar = Calendar.getInstance();
-        String time = formatTime.format(calendar.getTime());
-        time = formatTime.format(event.timestamp);*/
+
         long timeInMillis = (new Date()).getTime()
                 + (event.timestamp - System.nanoTime()) / 1000000L;
         Timestamp stamp = new Timestamp(timeInMillis);
@@ -187,7 +176,7 @@ public class SensorDataManager
 
         Log.v("SensorTimeStamp1", stamp.toString());
         Log.v("SensorTimeStamp2", (new Long(timeInMillis)).toString());
-        Log.v("Sensor",event.sensor.getName());
+        Log.v("Sensor", event.sensor.getName());
 
         if (timeInMillis > SensorTimeStamp) {
 
@@ -231,36 +220,28 @@ public class SensorDataManager
         if (featureVector != null) {
             ModelHandler.MLModel lMLModel;
             String Ausgabe, Ausgabe2;
-            Integer ClassifiedAs= 0;
+            Integer ClassifiedAs = 0;
 
             lMLModel = gModelHandler.getActiveMLModel();
             Ausgabe = lMLModel.predictSmoking(featureVector.mVector);
-            Ausgabe2 = "Team2_" + Ausgabe;
 
-            String FeatureString = Ausgabe + " " + dblarr2str(featureVector.mVector)+"\n";
+            String FeatureString = Ausgabe + " " + dblarr2str(featureVector.mVector) + "\n";
             writeToFile2(FeatureString);
 
             ClassificationsBufferString[ClasBufInd] = Ausgabe;
-            ClassificationsBuffer[ClasBufInd]= !Ausgabe.equals("NULL");
-            for(boolean b : ClassificationsBuffer) {
+            ClassificationsBuffer[ClasBufInd] = !Ausgabe.equals("NULL");
+            for (boolean b : ClassificationsBuffer) {
                 ClassifiedAs += b ? 1 : 0;
             }
-            if(ClassifiedAs>7 && !SmokingDetected) {
+            if (ClassifiedAs > 7 && !SmokingDetected) {
                 StartTimeStamp = SensorTimeStamp;
                 SmokingDetected = true;
             }
-            if(ClassifiedAs<=7 && SmokingDetected) {
+            if (ClassifiedAs <= 7 && SmokingDetected) {
                 StopTimeStamp = SensorTimeStamp;
                 SmokingDetected = false;
 
-
-                Intent intent = new Intent();
-                intent.setAction("de.uni_freiburg.iems.beatit");
-                intent.putExtra("StartTime", (new Timestamp(StartTimeStamp)).toString());
-                intent.putExtra("StopTime", (new Timestamp(StopTimeStamp)).toString());
-                intent.putExtra("SenderInfo", Ausgabe2);
-
-                context.sendBroadcast(intent);
+                smokingEventDetected(new Date(SensorTimeStamp), (int) (StartTimeStamp - SensorTimeStamp));
             }
 
             ClasBufInd++;
@@ -300,6 +281,7 @@ public class SensorDataManager
             Log.v("INFO", e.getMessage());
         }
     }
+
     private void writeToFile2(String line) {
         try {
             fileStream2 = new FileOutputStream(file2, true);
@@ -310,37 +292,46 @@ public class SensorDataManager
         }
     }
 
-    public void SimulateSmokingEventDetected() {
-        for (OnSmokingEventDetectedListener listener:onSmokingEventDetectedListeners) {
-            listener.onSmokingEventDetected( 3000);
-        }
+    private void smokingEventDetected(Date startDateAndTime, int duration) {
+        if (onSmokingEventDetectedListener != null)
+            onSmokingEventDetectedListener.onSmokingEventDetected(startDateAndTime, duration);
     }
-    public void addOnSmokingEventDetectedListener(OnSmokingEventDetectedListener listener){
-        onSmokingEventDetectedListeners.add(listener);
+
+    public void simulateSmokingEventDetected() {
+       smokingEventDetected(new Date(), 120000);
     }
+
+    public void setOnSmokingEventDetectedListener(OnSmokingEventDetectedListener listener) {
+        onSmokingEventDetectedListener = listener;
+    }
+
+    public void removeOnSmokingEventDetectedListener() {
+        onSmokingEventDetectedListener = null;
+    }
+
 
     public interface OnSmokingEventDetectedListener {
-        void onSmokingEventDetected(int durationInMiliseconds);
+        void onSmokingEventDetected(Date startDateAndTime, int durationInMiliseconds);
     }
 
-/*    public  boolean isStoragePermissionGranted() {
+    /*    public  boolean isStoragePermissionGranted() {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (context.getApplicationContext().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (context.getApplicationContext().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    Log.v("INFO","Permission is granted");
+                    return true;
+                } else {
+                    Log.v("INFO","Permission is revoked");
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                    return false;
+                }
+            }
+            else { //permission is automatically granted on sdk<23 upon installation
                 Log.v("INFO","Permission is granted");
                 return true;
-            } else {
-                Log.v("INFO","Permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                return false;
             }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
-            Log.v("INFO","Permission is granted");
-            return true;
-        }
-    }*/
+        }*/
     private String dblarr2str(double[] featureVector) {
         StringJoiner sj = new StringJoiner(" ");
 
