@@ -12,6 +12,7 @@ import android.icu.text.SimpleDateFormat;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.os.PowerManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,7 +29,8 @@ public class SensorDataManager
     public MutableLiveData<Boolean> isMonitoringStarted;
 
     private OnSmokingEventDetectedListener onSmokingEventDetectedListener;
-
+    private PowerManager mPowerManager;
+    private PowerManager.WakeLock mWakeLock;
     private SensorManager mSensorManager;
     private Sensor mSensorGyroscope;
     private Sensor mSensorAccelerometer;
@@ -36,6 +38,7 @@ public class SensorDataManager
     private Sensor mSensorMagneticField;
     private Sensor mSensorPressure;
     private Sensor mSensorRoatationVector;
+    private Sensor mSegnificantMotion;
 
     private FileOutputStream fileStream;
     private FileOutputStream fileStream2;
@@ -85,6 +88,9 @@ public class SensorDataManager
         onSmokingEventDetectedListener = null;
         gModelHandler = ModelHandler.getInstance();
         gModelHandler.changeModel(context, "RF__6Attr.model");
+        mPowerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        mWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SensorDataManager:SDM");
+
     }
 
     /**
@@ -93,6 +99,7 @@ public class SensorDataManager
      * @return true if start was successful.
      */
     public boolean startSensorMonitoring() {
+        mWakeLock.acquire();
         mSensorManager = (SensorManager) this.context.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
 
         mSensorAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -110,7 +117,11 @@ public class SensorDataManager
 
         mSensorRoatationVector = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         mSensorManager.registerListener(this, mSensorRoatationVector, 20000);
-        */
+*/
+        mSegnificantMotion = mSensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION);
+        mSensorManager.registerListener(this, mSegnificantMotion,20000,20);
+
+
 
         try {
             segFeat = new SegFeatWear.Builder()
@@ -155,6 +166,7 @@ public class SensorDataManager
     }
 
     public boolean stopSensorMonitoring() {
+        mWakeLock.release();
         mSensorManager.unregisterListener(this);
         isMonitoringStarted.setValue(false);
         return true;
