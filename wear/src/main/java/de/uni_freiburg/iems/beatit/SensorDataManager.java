@@ -178,6 +178,8 @@ public class SensorDataManager
         long timeInMillis = (new Date()).getTime()
                 + (event.timestamp - System.nanoTime()) / 1000000L;
         Timestamp stamp = new Timestamp(timeInMillis);
+        long timeInMillisCopy = timeInMillis;
+        Date currentTime = Calendar.getInstance().getTime();
 
         timeInMillis = timeInMillis / 10;
 
@@ -186,9 +188,13 @@ public class SensorDataManager
             StartTimeStamp = timeInMillis;
         }
 
-        Log.v("SensorTimeStamp1", stamp.toString());
-        Log.v("SensorTimeStamp2", (new Long(timeInMillis)).toString());
-        Log.v("Sensor", event.sensor.getName());
+        //Log.v("SensorTimeStamp1", stamp.toString());
+        //Log.v("SensorTimeStamp3", new Timestamp(timeInMillisCopy).toString());
+        //Log.v("SensorTimeStamp4", currentTime.toString());
+        //Log.v("SensorTimeStamp5", new Timestamp(new Date().getTime()).toString());
+        //Log.v("SensorTimeStamp6", new Timestamp(event.timestamp).toString());
+        //Log.v("Sensor", event.sensor.getName());
+        //Log.v("SensorTimeStamp2", (new Long(timeInMillis)).toString());
 
         if (timeInMillis > SensorTimeStamp) {
 
@@ -205,7 +211,7 @@ public class SensorDataManager
                     + formatter.format(MGX) + " " + formatter.format(MGY) + " "
                     + formatter.format(MGZ) + "\n";
 
-            Log.v("INFO", value);
+           // Log.v("INFO", value);
             writeToFile(value);
             SensorTimeStamp = timeInMillis;
         }
@@ -246,14 +252,14 @@ public class SensorDataManager
                 ClassifiedAs += b ? 1 : 0;
             }
             if(ClassifiedAs>3 && !SmokingDetected) {
-                StartTimeStamp = SensorTimeStamp*10;
+                StartTimeStamp = timeInMillisCopy;
                 SmokingDetected = true;
             }
             if(ClassifiedAs<=3 && SmokingDetected) {
-                StopTimeStamp = SensorTimeStamp*10;
+                StopTimeStamp = timeInMillisCopy;
                 SmokingDetected = false;
 
-                smokingEventDetected(new Date(SensorTimeStamp), (int) (StartTimeStamp - SensorTimeStamp));
+                smokingEventDetected(new Date(new Date().getTime()), (int) (StopTimeStamp - StartTimeStamp ));
             }
 
             ClasBufInd++;
@@ -285,23 +291,23 @@ public class SensorDataManager
     }*/
 
     private void writeToFile(String line) {
-        try {
+        /*try {
             fileStream = new FileOutputStream(file, true);
             fileStream.write(line.getBytes());
             fileStream.close();
         } catch (Exception e) {
             Log.v("INFO", e.getMessage());
-        }
+        }*/
     }
 
     private void writeToFile2(String line) {
-        try {
+        /*try {
             fileStream2 = new FileOutputStream(file2, true);
             fileStream2.write(line.getBytes());
             fileStream2.close();
         } catch (Exception e) {
             Log.v("INFO", e.getMessage());
-        }
+        }*/
     }
 
     private void smokingEventDetected(Date startDateAndTime, int duration) {
