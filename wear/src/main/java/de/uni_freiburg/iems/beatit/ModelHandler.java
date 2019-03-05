@@ -2,6 +2,7 @@ package de.uni_freiburg.iems.beatit;
 
 import android.content.res.AssetManager;
 import android.content.Context;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -141,7 +142,6 @@ public class ModelHandler {
     public void changeModel(Context modelContext,String ModelName){
 
         ArrayList<Attribute> attributeList = attributeList3Att;
-        AssetManager assetManager = modelContext.getAssets();
         if( ModelName == "RF__6Attr.model"){
             attributeList =attributeList6Att;
         }else if(ModelName == "RF__3Attr.model"){
@@ -150,7 +150,7 @@ public class ModelHandler {
             attributeList =attributeList6AttHW;
         }
 
-        activeMLModel = new MLModel(ModelName, attributeList, assetManager );
+        activeMLModel = new MLModel(ModelName, attributeList, modelContext );
     }
 
     public class MLModel{
@@ -159,23 +159,25 @@ public class ModelHandler {
         private Classifier mClassifier = null;
         private Instances SensorDataUnpredicted;
 
-        public MLModel(String Name, ArrayList<Attribute> AttList, AssetManager assetManager){
+        public MLModel(String Name, ArrayList<Attribute> AttList, Context modelContext){
             ModelName = Name;
             attributeList = AttList;
             SensorDataUnpredicted  = new Instances("SensorData", attributeList, 1);
             SensorDataUnpredicted.setClassIndex(0);
-            mClassifier = this.ReturnClassifier(assetManager);
+            mClassifier = this.ReturnClassifier(modelContext);
         }
 
-        private Classifier ReturnClassifier(AssetManager assetManager){
+        private Classifier ReturnClassifier(Context modelContext){
+            AssetManager assetManager = modelContext.getAssets();
             try {
-                InputStream inputStream = assetManager.open(ModelName);
-                List<String> mapList = Arrays.asList(assetManager.list(""));
+                // InputStream inputStream = assetManager.open(ModelName);
+                // List<String> mapList = Arrays.asList(assetManager.list(""));
                 return (Classifier) weka.core.SerializationHelper.read(assetManager.open(ModelName));
             }catch(IOException e){
+                Toast.makeText(modelContext, "Model IOException", Toast.LENGTH_SHORT).show();
                 return (Classifier) null;
             }catch(Exception e){
-                //do something else
+                Toast.makeText(modelContext, "Exception No classifier", Toast.LENGTH_SHORT).show();
                 return (Classifier) null;
             }
 
