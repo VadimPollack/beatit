@@ -121,7 +121,7 @@ public class SensorDataManager
 
         mSegnificantMotion = mSensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION);
         mSensorManager.registerListener(this, mSegnificantMotion,20000,20);
-        */
+*/
 
 
         try {
