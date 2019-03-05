@@ -194,7 +194,7 @@ public class EventDiary extends AppCompatActivity implements
         final String RECORD_KEY = "com.example.record.record";
 
         int duration;
-        long recordId;
+        String recordId;
         String timeZone;
         String startDateAndTime;
         String userLabel;
@@ -209,7 +209,7 @@ public class EventDiary extends AppCompatActivity implements
                     Log.v("Mobile", "DataReceived");
                     DataMap dataMap = dataMapItem.getDataMap().getDataMap(RECORD_KEY);
                     duration = dataMap.getInt(DURATION_KEY);
-                    recordId = dataMap.getLong(RECORDID_KEY);
+                    recordId = dataMap.getString(RECORDID_KEY);
                     timeZone = dataMap.getString(TIMEZONE_KEY);
                     startDateAndTime = dataMap.getString(STARTDAT_KEY);
                     userLabel = dataMap.getString(LABEL_KEY);
