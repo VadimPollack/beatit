@@ -69,6 +69,7 @@ public class SensorDataManager
 
     private ModelHandler gModelHandler;
     private String ClassificationsBufferString[] = new String[6];
+    private long ClassificationsBufferTimeStamp[] = new long[6];
     private boolean[] ClassificationsBuffer = new boolean[6];
     private int ClasBufInd = 0;
     private boolean SmokingDetected = false;
@@ -117,10 +118,10 @@ public class SensorDataManager
 
         mSensorRoatationVector = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         mSensorManager.registerListener(this, mSensorRoatationVector, 20000);
-*/
+
         mSegnificantMotion = mSensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION);
         mSensorManager.registerListener(this, mSegnificantMotion,20000,20);
-
+        */
 
 
         try {
@@ -179,7 +180,6 @@ public class SensorDataManager
                 + (event.timestamp - System.nanoTime()) / 1000000L;
         Timestamp stamp = new Timestamp(timeInMillis);
         long timeInMillisCopy = timeInMillis;
-        Date currentTime = Calendar.getInstance().getTime();
 
         timeInMillis = timeInMillis / 10;
 
@@ -188,13 +188,9 @@ public class SensorDataManager
             StartTimeStamp = timeInMillis;
         }
 
-        //Log.v("SensorTimeStamp1", stamp.toString());
-        //Log.v("SensorTimeStamp3", new Timestamp(timeInMillisCopy).toString());
-        //Log.v("SensorTimeStamp4", currentTime.toString());
-        //Log.v("SensorTimeStamp5", new Timestamp(new Date().getTime()).toString());
-        //Log.v("SensorTimeStamp6", new Timestamp(event.timestamp).toString());
-        //Log.v("Sensor", event.sensor.getName());
-        //Log.v("SensorTimeStamp2", (new Long(timeInMillis)).toString());
+        Log.v("SensorTimeStamp1", stamp.toString());
+        Log.v("SensorTimeStamp2", (new Long(timeInMillis)).toString());
+        Log.v("Sensor", event.sensor.getName());
 
         if (timeInMillis > SensorTimeStamp) {
 
@@ -211,7 +207,7 @@ public class SensorDataManager
                     + formatter.format(MGX) + " " + formatter.format(MGY) + " "
                     + formatter.format(MGZ) + "\n";
 
-           // Log.v("INFO", value);
+            Log.v("INFO", value);
             writeToFile(value);
             SensorTimeStamp = timeInMillis;
         }
@@ -248,16 +244,31 @@ public class SensorDataManager
 
             ClassificationsBufferString[ClasBufInd] = Ausgabe;
             ClassificationsBuffer[ClasBufInd] = !Ausgabe.equals("NULL");
+            ClassificationsBufferTimeStamp[ClasBufInd] = timeInMillisCopy;
             for (boolean b : ClassificationsBuffer) {
                 ClassifiedAs += b ? 1 : 0;
             }
             if(ClassifiedAs>3 && !SmokingDetected) {
-                StartTimeStamp = timeInMillisCopy;
                 SmokingDetected = true;
+                if(ClassificationsBuffer[(ClasBufInd+1)%6])
+                {
+                    StartTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+1)%6];
+                }else if(ClassificationsBuffer[(ClasBufInd+2)%6]){
+                    StartTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+2)%6];
+                }else{
+                    StartTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+3)%6];
+                }
             }
             if(ClassifiedAs<=3 && SmokingDetected) {
-                StopTimeStamp = timeInMillisCopy;
+
                 SmokingDetected = false;
+                if(ClassificationsBuffer[(ClasBufInd+5)%6]) {
+                    StopTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+5)%6];
+                }else if(ClassificationsBuffer[(ClasBufInd+4)%6]) {
+                    StopTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+4)%6];
+                }else{
+                    StopTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+3)%6];
+                }
 
                 smokingEventDetected(new Date(new Date().getTime()), (int) (StopTimeStamp - StartTimeStamp ));
             }
@@ -301,7 +312,7 @@ public class SensorDataManager
     }
 
     private void writeToFile2(String line) {
-         try {
+        try {
             fileStream2 = new FileOutputStream(file2, true);
             fileStream2.write(line.getBytes());
             fileStream2.close();
