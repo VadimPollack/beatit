@@ -118,10 +118,10 @@ public class SensorDataManager
 
         mSensorRoatationVector = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         mSensorManager.registerListener(this, mSensorRoatationVector, 20000);
-*/
+
         mSegnificantMotion = mSensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION);
         mSensorManager.registerListener(this, mSegnificantMotion,20000,20);
-
+*/
 
 
         try {
@@ -179,6 +179,7 @@ public class SensorDataManager
         long timeInMillis = (new Date()).getTime()
                 + (event.timestamp - System.nanoTime()) / 1000000L;
         Timestamp stamp = new Timestamp(timeInMillis);
+        long timeInMillisCopy = timeInMillis;
 
         timeInMillis = timeInMillis / 10;
 
@@ -187,9 +188,13 @@ public class SensorDataManager
             StartTimeStamp = timeInMillis;
         }
 
-        Log.v("SensorTimeStamp1", stamp.toString());
-        Log.v("SensorTimeStamp2", (new Long(timeInMillis)).toString());
-        Log.v("Sensor", event.sensor.getName());
+        //Log.v("SensorTimeStamp1", stamp.toString());
+        //Log.v("SensorTimeStamp3", new Timestamp(timeInMillisCopy).toString());
+        //Log.v("SensorTimeStamp4", currentTime.toString());
+        //Log.v("SensorTimeStamp5", new Timestamp(new Date().getTime()).toString());
+        //Log.v("SensorTimeStamp6", new Timestamp(event.timestamp).toString());
+        //Log.v("Sensor", event.sensor.getName());
+        //Log.v("SensorTimeStamp2", (new Long(timeInMillis)).toString());
 
         if (timeInMillis > SensorTimeStamp) {
 
@@ -206,7 +211,7 @@ public class SensorDataManager
                     + formatter.format(MGX) + " " + formatter.format(MGY) + " "
                     + formatter.format(MGZ) + "\n";
 
-            Log.v("INFO", value);
+           // Log.v("INFO", value);
             writeToFile(value);
             SensorTimeStamp = timeInMillis;
         }
@@ -243,7 +248,7 @@ public class SensorDataManager
 
             ClassificationsBufferString[ClasBufInd] = Ausgabe;
             ClassificationsBuffer[ClasBufInd] = !Ausgabe.equals("NULL");
-            ClassificationsBufferTimeStamp[ClasBufInd] = SensorTimeStamp*10;
+            ClassificationsBufferTimeStamp[ClasBufInd] = timeInMillisCopy;
             for (boolean b : ClassificationsBuffer) {
                 ClassifiedAs += b ? 1 : 0;
             }
@@ -269,7 +274,7 @@ public class SensorDataManager
                     StopTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+3)%6];
                 }
 
-                smokingEventDetected(new Date(StopTimeStamp), (int) (StopTimeStamp - StartTimeStamp));
+                smokingEventDetected(new Date(new Date().getTime()), (int) (StopTimeStamp - StartTimeStamp ));
             }
 
             ClasBufInd++;
