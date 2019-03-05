@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity implements
     private enum NavigationSection {
         MotionMonitor(R.string.navigation_drawer_monitoring_title, R.drawable.ic_monitoring_black_24dp),
         Diary(R.string.navigation_drawer_diary_title, R.drawable.ic_diary_black_24dp),
-        //Earth(R.string.earth_title, R.drawable.ic_earth_black_24dp),
+        Sync(R.string.navigation_drawer_sync_title, R.drawable.ic_sync_black_24dp),
         Settings(R.string.navigation_drawer_settings_title, R.drawable.ic_settings_black_24dp);
 
         final int titleRes;
@@ -116,12 +116,18 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case Settings:
                 viewModel.simulateSmokingEventDetected();
-                selectedSection = NavigationSection.Diary;
+                selectedSection = mCurrentSection;
+                break;
+            case Sync:
+                viewModel.sync();
+                selectedSection = mCurrentSection;
+                break;
             default:
                 selectedFragment = DiaryView.newInstance();
         }
-        final Fragment selectedFragmentFinal = selectedFragment;
         mCurrentSection = selectedSection;
+        if (selectedFragment == null) return;
+        final Fragment selectedFragmentFinal = selectedFragment;
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container, selectedFragmentFinal)
