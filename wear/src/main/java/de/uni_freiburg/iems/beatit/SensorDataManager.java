@@ -69,6 +69,7 @@ public class SensorDataManager
 
     private ModelHandler gModelHandler;
     private String ClassificationsBufferString[] = new String[6];
+    private long ClassificationsBufferTimeStamp[] = new long[6];
     private boolean[] ClassificationsBuffer = new boolean[6];
     private int ClasBufInd = 0;
     private boolean SmokingDetected = false;
@@ -242,18 +243,33 @@ public class SensorDataManager
 
             ClassificationsBufferString[ClasBufInd] = Ausgabe;
             ClassificationsBuffer[ClasBufInd] = !Ausgabe.equals("NULL");
+            ClassificationsBufferTimeStamp[ClasBufInd] = SensorTimeStamp*10;
             for (boolean b : ClassificationsBuffer) {
                 ClassifiedAs += b ? 1 : 0;
             }
             if(ClassifiedAs>3 && !SmokingDetected) {
-                StartTimeStamp = SensorTimeStamp*10;
                 SmokingDetected = true;
+                if(ClassificationsBuffer[(ClasBufInd+1)%6])
+                {
+                    StartTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+1)%6];
+                }else if(ClassificationsBuffer[(ClasBufInd+2)%6]){
+                    StartTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+2)%6];
+                }else{
+                    StartTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+3)%6];
+                }
             }
             if(ClassifiedAs<=3 && SmokingDetected) {
-                StopTimeStamp = SensorTimeStamp*10;
-                SmokingDetected = false;
 
-                smokingEventDetected(new Date(SensorTimeStamp), (int) (StartTimeStamp - SensorTimeStamp));
+                SmokingDetected = false;
+                if(ClassificationsBuffer[(ClasBufInd+5)%6]) {
+                    StopTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+5)%6];
+                }else if(ClassificationsBuffer[(ClasBufInd+4)%6]) {
+                    StopTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+4)%6];
+                }else{
+                    StopTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+3)%6];
+                }
+
+                smokingEventDetected(new Date(StopTimeStamp), (int) (StopTimeStamp - StartTimeStamp));
             }
 
             ClasBufInd++;
