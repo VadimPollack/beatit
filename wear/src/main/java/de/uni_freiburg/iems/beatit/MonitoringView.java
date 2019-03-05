@@ -1,6 +1,7 @@
 package de.uni_freiburg.iems.beatit;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -24,6 +25,7 @@ public class MonitoringView extends Fragment {
 
     private MonitoringViewModel monitoringViewModel;
     private ImageButton startStopButton;
+    private Context mContext;
 
     public static MonitoringView newInstance() {
         return new MonitoringView();
@@ -64,6 +66,7 @@ public class MonitoringView extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        mContext = getContext();
         monitoringViewModel = ViewModelProviders.of(this).get(MonitoringViewModel.class);
         startStopButton.setOnClickListener(view -> onStartStopButtonClicked());
         monitoringViewModel.getIsMonitoringStarted().observe(this, isMonitoringStarted -> {
@@ -73,7 +76,7 @@ public class MonitoringView extends Fragment {
 
         monitoringViewModel = ViewModelProviders.of(this).get(MonitoringViewModel.class);
         monitoringViewModel.setOnSmokingEventDetectedListener((record) -> {
-            new SmokingEventDetectedNotification(getContext(), record).show();
+            new SmokingEventDetectedNotification(mContext, record).show();
 
             sendGlobalIntent(record.startDateAndTime.getTime(), record.startDateAndTime.getTime() + record.duration);
         });
@@ -86,7 +89,7 @@ public class MonitoringView extends Fragment {
         intent.putExtra("StartTime", (new Timestamp(startTime)).toString());
         intent.putExtra("StopTime", (new Timestamp(stopTime)).toString());
         intent.putExtra("SenderInfo", "TEAM2_SMOKING_DETECTED");
-        getContext().sendBroadcast(intent);
+        mContext.sendBroadcast(intent);
     }
 
     private void onStartStopButtonClicked() {

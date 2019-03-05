@@ -291,23 +291,23 @@ public class SensorDataManager
     }*/
 
     private void writeToFile(String line) {
-        /*try {
+        try {
             fileStream = new FileOutputStream(file, true);
             fileStream.write(line.getBytes());
             fileStream.close();
         } catch (Exception e) {
             Log.v("INFO", e.getMessage());
-        }*/
+        }
     }
 
     private void writeToFile2(String line) {
-        /*try {
+         try {
             fileStream2 = new FileOutputStream(file2, true);
             fileStream2.write(line.getBytes());
             fileStream2.close();
         } catch (Exception e) {
             Log.v("INFO", e.getMessage());
-        }*/
+        }
     }
 
     private void smokingEventDetected(Date startDateAndTime, int duration) {
