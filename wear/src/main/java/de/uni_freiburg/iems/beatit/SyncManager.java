@@ -33,7 +33,7 @@ import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
 
-public class ConnectionClass implements
+public class SyncManager implements
         DataClient.OnDataChangedListener,
         MessageClient.OnMessageReceivedListener,
         CapabilityClient.OnCapabilityChangedListener {
@@ -42,7 +42,7 @@ public class ConnectionClass implements
     private static SyncDataAsyncTask task;
 
 
-    public ConnectionClass(Application context) {
+    public SyncManager(Application context) {
         this.context = context;
         Wearable.getDataClient(context).addListener(this);
     }

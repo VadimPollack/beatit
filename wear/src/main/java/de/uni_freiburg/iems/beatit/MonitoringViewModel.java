@@ -11,7 +11,6 @@ import java.util.TimeZone;
 public class MonitoringViewModel extends AndroidViewModel {
 
     private SensorDataManager mSensorDataManager;
-    private ConnectionClass mDataSync;
     private DiaryDataManager mdataManager;
     private ModelHandler mModelHandler;
     private onSmokingEventDetectedListener mSmokingEventListener;
@@ -20,7 +19,6 @@ public class MonitoringViewModel extends AndroidViewModel {
         super(application);
         mModelHandler = ModelHandler.getInstance();
         mSensorDataManager = SensorDataManager.getInstance(application);
-        mDataSync = new ConnectionClass(application);
         mdataManager = DiaryDataManager.getInstance(application);
     }
 
@@ -29,7 +27,6 @@ public class MonitoringViewModel extends AndroidViewModel {
     }
 
     public void startMonitoring() {
-        //mDataSync.sendData(mdataManager);
         if (mSensorDataManager.isMonitoringStarted.getValue()) return;
         mSensorDataManager.setOnSmokingEventDetectedListener((startDateAndTime, durationInMilliseconds) -> {
             DiaryRecord newRecord = new DiaryRecord(
