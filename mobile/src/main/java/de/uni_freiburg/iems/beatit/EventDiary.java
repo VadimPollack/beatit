@@ -251,7 +251,7 @@ public class EventDiary extends AppCompatActivity implements
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/recordMobile");
         for (String startDateAndTime : SmokeList) {
             DataMap map = new DataMap();
-            map.putInt(DURATION_KEY, 4);
+            map.putInt(DURATION_KEY, 3);
             map.putString(RECORDID_KEY, "mobile");
             map.putString(TIMEZONE_KEY, TimeZone.getDefault().getID());
             map.putString(STARTDAT_KEY, startDateAndTime);
