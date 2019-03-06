@@ -188,9 +188,13 @@ public class SensorDataManager
             StartTimeStamp = timeInMillis;
         }
 
-        Log.v("SensorTimeStamp1", stamp.toString());
-        Log.v("SensorTimeStamp2", (new Long(timeInMillis)).toString());
-        Log.v("Sensor", event.sensor.getName());
+        //Log.v("SensorTimeStamp1", stamp.toString());
+        //Log.v("SensorTimeStamp3", new Timestamp(timeInMillisCopy).toString());
+        //Log.v("SensorTimeStamp4", currentTime.toString());
+        //Log.v("SensorTimeStamp5", new Timestamp(new Date().getTime()).toString());
+        //Log.v("SensorTimeStamp6", new Timestamp(event.timestamp).toString());
+        //Log.v("Sensor", event.sensor.getName());
+        //Log.v("SensorTimeStamp2", (new Long(timeInMillis)).toString());
 
         if (timeInMillis > SensorTimeStamp) {
 
@@ -207,7 +211,7 @@ public class SensorDataManager
                     + formatter.format(MGX) + " " + formatter.format(MGY) + " "
                     + formatter.format(MGZ) + "\n";
 
-            Log.v("INFO", value);
+           // Log.v("INFO", value);
             writeToFile(value);
             SensorTimeStamp = timeInMillis;
         }
