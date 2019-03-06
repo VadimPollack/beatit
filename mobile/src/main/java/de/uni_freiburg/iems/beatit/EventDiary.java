@@ -112,7 +112,8 @@ public class EventDiary extends AppCompatActivity implements
             Snackbar.make(view, "Added: \"" + currentTime + "\"" , Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
             adapter.notifyDataSetChanged();
-
+            // need to be moved to the right place
+            sendData();
             verifyStoragePermissions(this);
             //write file
             if(isExternalStorageWritable())
@@ -205,7 +206,7 @@ public class EventDiary extends AppCompatActivity implements
                 // DataItem changed
                 DataItem item = event.getDataItem();
                 DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
-                if (item.getUri().getPath().compareTo("/record") == 0) {
+                if (item.getUri().getPath().compareTo("/recordWear") == 0) {
                     Log.v("Mobile", "DataReceived");
                     DataMap dataMap = dataMapItem.getDataMap().getDataMap(RECORD_KEY);
                     duration = dataMap.getInt(DURATION_KEY);
@@ -214,7 +215,10 @@ public class EventDiary extends AppCompatActivity implements
                     startDateAndTime = dataMap.getString(STARTDAT_KEY);
                     userLabel = dataMap.getString(LABEL_KEY);
                     Log.v("Mobile", "DataReceived");
+                    SmokeList.push(startDateAndTime);
 
+
+                    verifyStoragePermissions(this);
                     if (isExternalStorageWritable()) {
                         FileOutputStream outputStream;
                         try {
@@ -236,13 +240,25 @@ public class EventDiary extends AppCompatActivity implements
     }
 
     public void sendData() {
-/*        final String COUNT_KEY = "com.example.key.count";
 
+        final String DURATION_KEY = "com.example.duration.record";
+        final String RECORDID_KEY = "com.example.recordId.record";
+        final String TIMEZONE_KEY = "com.example.timeZone.record";
+        final String STARTDAT_KEY = "com.example.startDateAndTime.record";
+        final String LABEL_KEY = "com.example.userLabel.record";
+        final String RECORD_KEY = "com.example.record.record";
 
-        PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/count1");
-        putDataMapReq.getDataMap().putInt(COUNT_KEY, count++);
-        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
-        Task<DataItem> putDataTask = Wearable.getDataClient(this).putDataItem(putDataReq);
+        PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/recordMobile");
+        for (String startDateAndTime : SmokeList) {
+            DataMap map = new DataMap();
+            map.putInt(DURATION_KEY, 4);
+            map.putString(RECORDID_KEY, "mobile");
+            map.putString(TIMEZONE_KEY, TimeZone.getDefault().getID());
+            map.putString(STARTDAT_KEY, startDateAndTime);
+            map.putString(LABEL_KEY, "smoking");
+            putDataMapReq.getDataMap().putDataMap(RECORD_KEY, map);
+            PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+            Task<DataItem> putDataTask = Wearable.getDataClient(this).putDataItem(putDataReq);
 
         putDataTask.addOnSuccessListener(
 
@@ -251,8 +267,8 @@ public class EventDiary extends AppCompatActivity implements
                     public void onSuccess(DataItem dataItem) {
                         Log.v("Mobile", "DataSend");
                     }
-                }); */
-
+                });
+        }
         Log.v("Mobile", "DataSend");
     }
 
