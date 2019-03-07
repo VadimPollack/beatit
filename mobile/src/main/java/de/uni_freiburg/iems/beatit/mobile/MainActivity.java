@@ -16,6 +16,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wearable.CapabilityClient;
 import com.google.android.gms.wearable.CapabilityInfo;
 import com.google.android.gms.wearable.DataClient;
@@ -26,6 +28,8 @@ import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
 import java.io.File;
@@ -92,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements
                 .commit();
 
 
-
+/*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
 
@@ -123,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
         });
+        */
     }
 
     @Override
@@ -254,13 +259,7 @@ public class MainActivity extends AppCompatActivity implements
             Task<DataItem> putDataTask = Wearable.getDataClient(this).putDataItem(putDataReq);
 
         putDataTask.addOnSuccessListener(
-
-                new OnSuccessListener<DataItem>() {
-                    @Override
-                    public void onSuccess(DataItem dataItem) {
-                        Log.v("Mobile", "DataSend");
-                    }
-                });
+                dataItem -> Log.v("Mobile", "DataSend"));
         }
         Log.v("Mobile", "DataSend");
     }
