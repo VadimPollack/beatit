@@ -83,7 +83,8 @@ public class SyncManager implements
                         map.putInt(DURATION_KEY, mRecord.duration);
                         map.putString(RECORDID_KEY, mRecord.recordId);
                         map.putString(TIMEZONE_KEY, mRecord.timeZone);
-                        map.putString(STARTDAT_KEY, mRecord.startDateAndTime.toString());
+                        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yy HH':'mm");
+                        map.putString(STARTDAT_KEY, format.format(mRecord.startDateAndTime));
                         map.putString(LABEL_KEY, mRecord.userLabel.toString());
                         putDataMapReq.getDataMap().putDataMap(RECORD_KEY, map);
                         PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();

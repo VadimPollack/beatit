@@ -35,11 +35,16 @@ import com.google.android.gms.wearable.Wearable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Calendar;
 import java.util.Scanner;
 import java.util.TimeZone;
+
+import de.uni_freiburg.iems.beatit.DiaryDataManager;
+import de.uni_freiburg.iems.beatit.DiaryRecord;
 
 public class MainActivity extends AppCompatActivity implements
         DataClient.OnDataChangedListener,
@@ -134,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_event_diary, menu);
-        sendData();
+        //sendData();
         return true;
     }
 
@@ -149,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements
         if (id == R.id.action_settings) {
             return true;
         }
-        sendData();
+        //sendData();
         return super.onOptionsItemSelected(item);
     }
 
@@ -215,20 +220,23 @@ public class MainActivity extends AppCompatActivity implements
                     Log.v("Mobile", "DataReceived");
                     SmokeList.push(startDateAndTime);
 
-
-                    verifyStoragePermissions(this);
-                    if (isExternalStorageWritable()) {
-                        FileOutputStream outputStream;
-                        try {
-                            file.createNewFile();
-                            outputStream = new FileOutputStream(file, true);
-                            outputStream.write((startDateAndTime + "\n").getBytes());
-                            outputStream.close();
-                            Log.v("INFO", file.getAbsolutePath());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                    android.icu.text.SimpleDateFormat format = new android.icu.text.SimpleDateFormat("dd-MM-yy HH':'mm"); //new SimpleDateFormat("ddd MMM dd HH':'mm':'ss 'GTM+01:00' yy");
+                    Date date = android.icu.util.Calendar.getInstance().getTime();
+                    try {
+                        date = format.parse(startDateAndTime);
+                    } catch (ParseException e) {
+                        Log.v("Connect", e.toString());
                     }
+                    // need to be add to the Diary
+                    DiaryRecord.Label label = label = DiaryRecord.Label.UNLABELED;
+                    if (userLabel.equals(DiaryRecord.Label.SMOKING.toString())) {
+                        label = DiaryRecord.Label.SMOKING;
+                    }else if (userLabel.equals(DiaryRecord.Label.NOT_SMOKING.toString())) {
+                        label = DiaryRecord.Label.NOT_SMOKING;
+                    }
+
+                    DiaryDataManager.getInstance(this).insert( new DiaryRecord(DiaryRecord.Source.USER, label, date, timeZone, new Integer(duration)));
+
 
                 } else if (event.getType() == DataEvent.TYPE_DELETED) {
                     // DataItem deleted
