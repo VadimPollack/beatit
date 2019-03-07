@@ -38,8 +38,8 @@ public class MonitoringView extends Fragment {
         startStopButton = rootView.findViewById(R.id.monitoring_start_stop_button);
         Spinner spinner = rootView.findViewById(R.id.monitoring_model_spinner);
         List<String> list = new ArrayList<>();
-        list.add("Smoking_RF10");
-        list.add("Smoking_RF21");
+        list.add("Smoking_RF6Attr");
+        list.add("Smoking_RF3Attr");
         list.add("HandWashing");
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this.getContext(),
                 android.R.layout.simple_spinner_item, list.toArray(new String[0]));
