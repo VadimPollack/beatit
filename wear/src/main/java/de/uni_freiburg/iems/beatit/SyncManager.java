@@ -78,26 +78,24 @@ public class SyncManager implements
             PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/recordWear");
             try {
                 for (DiaryRecord mRecord : mDatamanager.getDiarySync()) {
-                    if (mRecord.userLabel == DiaryRecord.Label.SMOKING) {
-                        DataMap map = new DataMap();
-                        map.putInt(DURATION_KEY, mRecord.duration);
-                        map.putString(RECORDID_KEY, mRecord.recordId);
-                        map.putString(TIMEZONE_KEY, mRecord.timeZone);
-                        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yy HH':'mm");
-                        map.putString(STARTDAT_KEY, format.format(mRecord.startDateAndTime));
-                        map.putString(LABEL_KEY, mRecord.userLabel.toString());
-                        putDataMapReq.getDataMap().putDataMap(RECORD_KEY, map);
-                        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
-                        Task<DataItem> putDataTask = Wearable.getDataClient(context).putDataItem(putDataReq);
-                        putDataTask.addOnSuccessListener(
+                    DataMap map = new DataMap();
+                    map.putInt(DURATION_KEY, mRecord.duration);
+                    map.putString(RECORDID_KEY, mRecord.recordId);
+                    map.putString(TIMEZONE_KEY, mRecord.timeZone);
+                    SimpleDateFormat format = new SimpleDateFormat("dd-MM-yy HH':'mm");
+                    map.putString(STARTDAT_KEY, format.format(mRecord.startDateAndTime));
+                    map.putString(LABEL_KEY, mRecord.userLabel.toString());
+                    putDataMapReq.getDataMap().putDataMap(RECORD_KEY, map);
+                    PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+                    Task<DataItem> putDataTask = Wearable.getDataClient(context).putDataItem(putDataReq);
+                    putDataTask.addOnSuccessListener(
 
-                                new OnSuccessListener<DataItem>() {
-                                    @Override
-                                    public void onSuccess(DataItem dataItem) {
-                                        Log.v("Connection", "DataSend");
-                                    }
-                                });
-                    }
+                            new OnSuccessListener<DataItem>() {
+                                @Override
+                                public void onSuccess(DataItem dataItem) {
+                                    Log.v("Connection", "DataSend");
+                                }
+                            });
                 }
             } catch (Exception e) {
                 Log.v("Connection", e.toString());
@@ -156,9 +154,11 @@ public class SyncManager implements
                         Log.v("Connect", e.toString());
                     }
                     // need to be add to the Diary
-                    DiaryRecord.Label label = label = DiaryRecord.Label.UNLABELED;
-                    if (userLabel.equals("smoking")) {
+                    DiaryRecord.Label label = DiaryRecord.Label.UNLABELED;
+                    if (userLabel.equals(DiaryRecord.Label.SMOKING.toString())) {
                         label = DiaryRecord.Label.SMOKING;
+                    }else if (userLabel.equals(DiaryRecord.Label.NOT_SMOKING.toString())) {
+                        label = DiaryRecord.Label.NOT_SMOKING;
                     }
 
                     DiaryDataManager.getInstance(context).insert( new DiaryRecord(DiaryRecord.Source.USER, label, date, timeZone, new Integer(duration)));

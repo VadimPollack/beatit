@@ -2,7 +2,9 @@ package de.uni_freiburg.iems.beatit.mobile;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -55,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private DataClient mDataclient;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static SyncDataAsyncTask task;
+    private Context context;
     File file;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -73,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements
 
         String dirName = "SmkFiles";
         String fileName = "diary.txt";
+        context = getApplicationContext();
         File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), dirName);
 
 
@@ -149,12 +154,11 @@ public class MainActivity extends AppCompatActivity implements
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
+        sendData(DiaryDataManager.getInstance(context));
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
-        //sendData();
         return super.onOptionsItemSelected(item);
     }
 
@@ -245,31 +249,58 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public void sendData() {
+    public void sendData(DiaryDataManager mDatamanager) {
+        task = new SyncDataAsyncTask(mDatamanager);
+        task.execute();
+    }
 
-        final String DURATION_KEY = "com.example.duration.record";
-        final String RECORDID_KEY = "com.example.recordId.record";
-        final String TIMEZONE_KEY = "com.example.timeZone.record";
-        final String STARTDAT_KEY = "com.example.startDateAndTime.record";
-        final String LABEL_KEY = "com.example.userLabel.record";
-        final String RECORD_KEY = "com.example.record.record";
+    private class SyncDataAsyncTask extends AsyncTask<DiaryRecord, Void, Void> {
+        private DiaryDataManager mDatamanager;
 
-        PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/recordMobile");
-        for (String startDateAndTime : SmokeList) {
-            DataMap map = new DataMap();
-            map.putInt(DURATION_KEY, 3);
-            map.putString(RECORDID_KEY, "mobile");
-            map.putString(TIMEZONE_KEY, TimeZone.getDefault().getID());
-            map.putString(STARTDAT_KEY, startDateAndTime);
-            map.putString(LABEL_KEY, "smoking");
-            putDataMapReq.getDataMap().putDataMap(RECORD_KEY, map);
-            PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
-            Task<DataItem> putDataTask = Wearable.getDataClient(this).putDataItem(putDataReq);
-
-        putDataTask.addOnSuccessListener(
-                dataItem -> Log.v("Mobile", "DataSend"));
+        private SyncDataAsyncTask(DiaryDataManager mDatamanager) {
+            this.mDatamanager = mDatamanager;
         }
-        Log.v("Mobile", "DataSend");
+
+        @Override
+        protected Void doInBackground(DiaryRecord... diaryRecords) {
+            final String DURATION_KEY = "com.example.duration.record";
+            final String RECORDID_KEY = "com.example.recordId.record";
+            final String TIMEZONE_KEY = "com.example.timeZone.record";
+            final String STARTDAT_KEY = "com.example.startDateAndTime.record";
+            final String LABEL_KEY = "com.example.userLabel.record";
+            final String RECORD_KEY = "com.example.record.record";
+            //final String COUNT_KEY = "com.example.key.count";
+
+            Log.v("Connect", "SendData");
+
+            PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/recordMobile");
+            try {
+                for (DiaryRecord mRecord : mDatamanager.getDiarySync()) {
+                    DataMap map = new DataMap();
+                    map.putInt(DURATION_KEY, mRecord.duration);
+                    map.putString(RECORDID_KEY, mRecord.recordId);
+                    map.putString(TIMEZONE_KEY, mRecord.timeZone);
+                    android.icu.text.SimpleDateFormat format = new android.icu.text.SimpleDateFormat("dd-MM-yy HH':'mm");
+                    map.putString(STARTDAT_KEY, format.format(mRecord.startDateAndTime));
+                    map.putString(LABEL_KEY, mRecord.userLabel.toString());
+                    putDataMapReq.getDataMap().putDataMap(RECORD_KEY, map);
+                    PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+                    Task<DataItem> putDataTask = Wearable.getDataClient(context).putDataItem(putDataReq);
+                    putDataTask.addOnSuccessListener(
+
+                            new OnSuccessListener<DataItem>() {
+                                @Override
+                                public void onSuccess(DataItem dataItem) {
+                                    Log.v("Connection", "DataSend");
+                                }
+                            });
+
+                }
+            } catch (Exception e) {
+                Log.v("Connection", e.toString());
+            }
+            return null;
+        }
     }
 
     @Override
