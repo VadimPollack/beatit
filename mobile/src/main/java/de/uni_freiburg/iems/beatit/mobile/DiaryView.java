@@ -49,7 +49,7 @@ public class DiaryView extends Fragment {
         diaryViewModel = ViewModelProviders.of(this).get(DiaryViewModel.class);
         diaryViewModel.getDiary().observe(this, diaryRecords -> {
             // update RecyclerView
-            adapter.setDiary(diaryRecords);
+            adapter.submitList(diaryRecords);
         });
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT) {
