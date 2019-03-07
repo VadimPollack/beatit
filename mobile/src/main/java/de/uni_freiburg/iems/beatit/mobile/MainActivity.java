@@ -201,11 +201,7 @@ public class MainActivity extends AppCompatActivity implements
         final String LABEL_KEY = "com.example.userLabel.record";
         final String RECORD_KEY = "com.example.record.record";
 
-        int duration;
-        String recordId;
-        String timeZone;
-        String startDateAndTime;
-        String userLabel;
+
 
         Log.v("Mobile", "DataChanged");
         for (DataEvent event : dataEventBuffer) {
@@ -214,6 +210,11 @@ public class MainActivity extends AppCompatActivity implements
                 DataItem item = event.getDataItem();
                 DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
                 if (item.getUri().getPath().compareTo("/recordWear") == 0) {
+                    final int duration;
+                    final String recordId;
+                    final String timeZone;
+                    final String startDateAndTime;
+                    final String userLabel;
                     Log.v("Mobile", "DataReceived");
                     DataMap dataMap = dataMapItem.getDataMap().getDataMap(RECORD_KEY);
                     duration = dataMap.getInt(DURATION_KEY);
@@ -225,25 +226,35 @@ public class MainActivity extends AppCompatActivity implements
                     SmokeList.push(startDateAndTime);
 
                     android.icu.text.SimpleDateFormat format = new android.icu.text.SimpleDateFormat("dd-MM-yy HH':'mm"); //new SimpleDateFormat("ddd MMM dd HH':'mm':'ss 'GTM+01:00' yy");
-                    Date date = android.icu.util.Calendar.getInstance().getTime();
+                    final Date date;Date date1;
                     try {
-                        date = format.parse(startDateAndTime);
+                        date1 = format.parse(startDateAndTime);
                     } catch (ParseException e) {
                         Log.v("Connect", e.toString());
+                        date1 = android.icu.util.Calendar.getInstance().getTime();
                     }
                     // need to be add to the Diary
-                    DiaryRecord.Label label = label = DiaryRecord.Label.UNLABELED;
+                    date = date1;
+                    final DiaryRecord.Label label;
                     if (userLabel.equals(DiaryRecord.Label.SMOKING.toString())) {
                         label = DiaryRecord.Label.SMOKING;
                     }else if (userLabel.equals(DiaryRecord.Label.NOT_SMOKING.toString())) {
                         label = DiaryRecord.Label.NOT_SMOKING;
+                    }else {
+                        label  = DiaryRecord.Label.UNLABELED;
                     }
 
-                    try {
-                        DiaryDataManager.getInstance(this).insert( new DiaryRecord(recordId, DiaryRecord.Source.USER, label, date, timeZone, new Integer(duration)));
-                    } catch (Exception e) {
-                        Log.v("Connect", e.toString());
-                    }
+                    AsyncTask.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                DiaryDataManager.getInstance(context).insert( new DiaryRecord(recordId, DiaryRecord.Source.USER, label, date, timeZone, new Integer(duration)));
+                            } catch (Exception e) {
+                                Log.v("Connect", e.toString());
+                            }
+                        }
+                    });
+
 
 
 
