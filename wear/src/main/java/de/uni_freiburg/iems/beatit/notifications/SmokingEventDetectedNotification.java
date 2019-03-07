@@ -21,7 +21,7 @@ public class SmokingEventDetectedNotification {
     DiaryRecord mDiaryRecord;
 
     public SmokingEventDetectedNotification(Context context, DiaryRecord record){
-        mContext = context.getApplicationContext();
+        mContext = context;
         mDiaryRecord = record;
     }
 
