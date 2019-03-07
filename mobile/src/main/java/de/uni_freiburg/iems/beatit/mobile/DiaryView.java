@@ -25,7 +25,6 @@ import de.uni_freiburg.iems.beatit.DiaryViewModel;
 
 public class DiaryView extends Fragment {
     private DiaryViewModel diaryViewModel;
-    private DiaryRecord mSelectedRecord;
 
     public static DiaryView newInstance() {
         return new DiaryView();
