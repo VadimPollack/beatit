@@ -186,7 +186,7 @@ public class ModelHandler {
             String className = "NoPrediction";
             DenseInstance newInstance = new DenseInstance(SensorDataUnpredicted.numAttributes());
 
-            if(mClassifier ==null || vector.length < (SensorDataUnpredicted.numAttributes()-1)){
+            if(mClassifier == null || vector.length < (SensorDataUnpredicted.numAttributes()-1)){
                 return "ErrorNoPrediction";
             }
             newInstance.setDataset(SensorDataUnpredicted);
@@ -195,13 +195,13 @@ public class ModelHandler {
             }
             try{
                 double result = mClassifier.classifyInstance(newInstance);
-                if(ModelName=="Handwashing.model"){
+                if(ModelName == "Handwashing.model"){
                     className = ClassesHandWashing.get(new Double(result).intValue());
                 }else {
                     className = ClassesSmoking.get(new Double(result).intValue());
                 }
             }catch(Exception e){
-                //doSomething
+                className = "ErrorNoPrediction";
             }
 
             return className;

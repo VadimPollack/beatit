@@ -13,6 +13,7 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.os.PowerManager;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -237,7 +238,7 @@ public class SensorDataManager
         SegFeatWear.FeatureVector featureVector = segFeat.read();
         if (featureVector != null) {
             ModelHandler.MLModel lMLModel;
-            String Ausgabe, Ausgabe2;
+            String Ausgabe;
             Integer ClassifiedAs = 0;
 
             lMLModel = gModelHandler.getActiveMLModel();
@@ -245,6 +246,10 @@ public class SensorDataManager
 
             String FeatureString = Ausgabe + " " + dblarr2str(featureVector.mVector)+"\n" + (new Timestamp(System.currentTimeMillis())).toString() +"\n";
             writeToFile2(FeatureString);
+            if(Ausgabe == "ErrorNoPrediction"){
+                Toast.makeText(this.context.getApplicationContext(), Ausgabe, Toast.LENGTH_SHORT).show();
+            }
+
 
             ClassificationsBufferString[ClasBufInd] = Ausgabe;
             ClassificationsBuffer[ClasBufInd] = !Ausgabe.equals("NULL");
@@ -263,15 +268,17 @@ public class SensorDataManager
                     StartTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+3)%6];
                 }
             }
-            if(ClassifiedAs<=3 && SmokingDetected) {
+            if(ClassifiedAs<3 && SmokingDetected) {
 
                 SmokingDetected = false;
                 if(ClassificationsBuffer[(ClasBufInd+5)%6]) {
                     StopTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+5)%6];
                 }else if(ClassificationsBuffer[(ClasBufInd+4)%6]) {
                     StopTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+4)%6];
-                }else{
+                }else if(ClassificationsBuffer[(ClasBufInd+3)%6]) {
                     StopTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+3)%6];
+                }else{
+                    StopTimeStamp = ClassificationsBufferTimeStamp[(ClasBufInd+2)%6];
                 }
 
                 smokingEventDetected(new Date(new Date().getTime()), (int) (StopTimeStamp - StartTimeStamp ));
