@@ -1,19 +1,16 @@
-package de.uni_freiburg.iems.beatit;
+package de.uni_freiburg.iems.beatit.mobile;
 
 import android.Manifest;
 import android.app.Activity;
-import android.arch.lifecycle.LiveData;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -44,9 +41,7 @@ import java.util.Calendar;
 import java.util.Scanner;
 import java.util.TimeZone;
 
-
-
-public class EventDiary extends AppCompatActivity implements
+public class MainActivity extends AppCompatActivity implements
         DataClient.OnDataChangedListener,
         MessageClient.OnMessageReceivedListener,
         CapabilityClient.OnCapabilityChangedListener{
@@ -66,7 +61,7 @@ public class EventDiary extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_event_diary);
+        setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -94,12 +89,14 @@ public class EventDiary extends AppCompatActivity implements
         }
         catch(Exception e){ e.printStackTrace();}
 
+        final Fragment startFragment = DiaryView.newInstance();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, startFragment)
+                .commit();
 
-        RecyclerView rv = (RecyclerView) findViewById(R.id.smokeList);
-        rv.setLayoutManager(new LinearLayoutManager(this));
-        MyRecyclerViewAdapter adapter = new MyRecyclerViewAdapter(this, SmokeList);
-        rv.setAdapter(adapter);
 
+/*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
 
@@ -111,8 +108,8 @@ public class EventDiary extends AppCompatActivity implements
 
             Snackbar.make(view, "Added: \"" + currentTime + "\"" , Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
-            adapter.notifyDataSetChanged();
-            // need to be moved to the right place
+
+            // todo need to be moved to the right place
             sendData();
             verifyStoragePermissions(this);
             //write file
@@ -130,6 +127,7 @@ public class EventDiary extends AppCompatActivity implements
                 }
             }
         });
+        */
     }
 
     @Override
@@ -261,13 +259,7 @@ public class EventDiary extends AppCompatActivity implements
             Task<DataItem> putDataTask = Wearable.getDataClient(this).putDataItem(putDataReq);
 
         putDataTask.addOnSuccessListener(
-
-                new OnSuccessListener<DataItem>() {
-                    @Override
-                    public void onSuccess(DataItem dataItem) {
-                        Log.v("Mobile", "DataSend");
-                    }
-                });
+                dataItem -> Log.v("Mobile", "DataSend"));
         }
         Log.v("Mobile", "DataSend");
     }

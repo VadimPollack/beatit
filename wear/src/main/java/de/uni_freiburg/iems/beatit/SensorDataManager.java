@@ -347,24 +347,6 @@ public class SensorDataManager
         void onSmokingEventDetected(Date startDateAndTime, int durationInMiliseconds);
     }
 
-/*    public  boolean isStoragePermissionGranted() {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (context.getApplicationContext().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-                Log.v("INFO","Permission is granted");
-                return true;
-            } else {
-                Log.v("INFO","Permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                return false;
-            }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
-            Log.v("INFO","Permission is granted");
-            return true;
-        }
-    }*/
     private String dblarr2str(double[] featureVector) {
         StringJoiner sj = new StringJoiner(" ");
 
