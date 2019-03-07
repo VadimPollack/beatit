@@ -239,7 +239,12 @@ public class MainActivity extends AppCompatActivity implements
                         label = DiaryRecord.Label.NOT_SMOKING;
                     }
 
-                    DiaryDataManager.getInstance(this).insert( new DiaryRecord(DiaryRecord.Source.USER, label, date, timeZone, new Integer(duration)));
+                    try {
+                        DiaryDataManager.getInstance(this).insert( new DiaryRecord(recordId, DiaryRecord.Source.USER, label, date, timeZone, new Integer(duration)));
+                    } catch (Exception e) {
+                        Log.v("Connect", e.toString());
+                    }
+
 
 
                 } else if (event.getType() == DataEvent.TYPE_DELETED) {
@@ -276,6 +281,7 @@ public class MainActivity extends AppCompatActivity implements
             PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/recordMobile");
             try {
                 for (DiaryRecord mRecord : mDatamanager.getDiarySync()) {
+                    Thread.sleep(100);
                     DataMap map = new DataMap();
                     map.putInt(DURATION_KEY, mRecord.duration);
                     map.putString(RECORDID_KEY, mRecord.recordId);

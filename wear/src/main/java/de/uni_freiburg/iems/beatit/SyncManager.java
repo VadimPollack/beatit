@@ -78,6 +78,7 @@ public class SyncManager implements
             PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/recordWear");
             try {
                 for (DiaryRecord mRecord : mDatamanager.getDiarySync()) {
+                    Thread.sleep(100);
                     DataMap map = new DataMap();
                     map.putInt(DURATION_KEY, mRecord.duration);
                     map.putString(RECORDID_KEY, mRecord.recordId);
@@ -128,7 +129,7 @@ public class SyncManager implements
         final String LABEL_KEY = "com.example.userLabel.record";
         final String RECORD_KEY = "com.example.record.record";
         int duration;
-        String recordId;
+        String recordId = "";
         String timeZone;
         String startDateAndTime;
         String userLabel;
@@ -160,8 +161,12 @@ public class SyncManager implements
                     }else if (userLabel.equals(DiaryRecord.Label.NOT_SMOKING.toString())) {
                         label = DiaryRecord.Label.NOT_SMOKING;
                     }
+                    try {
+                        DiaryDataManager.getInstance(context).insert( new DiaryRecord(recordId, DiaryRecord.Source.USER, label, date, timeZone, new Integer(duration)));
+                    } catch (Exception e) {
+                        Log.v("Connect", e.toString());
+                    }
 
-                    DiaryDataManager.getInstance(context).insert( new DiaryRecord(DiaryRecord.Source.USER, label, date, timeZone, new Integer(duration)));
                 }
             }
         }
