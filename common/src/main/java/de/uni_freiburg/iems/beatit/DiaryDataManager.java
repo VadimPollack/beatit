@@ -5,6 +5,8 @@ import android.arch.lifecycle.LiveData;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.util.Log;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -64,8 +66,13 @@ public class DiaryDataManager {
 
         @Override
         protected Void doInBackground(DiaryRecord... diaryRecords) {
-            this.diaryRecordDao.insert(diaryRecords[0]);
-            return null;
+            try {
+                this.diaryRecordDao.insert(diaryRecords[0]);
+                return null;
+
+            }
+            catch (Exception e )
+            Log.e("InsertNoteAsync", "Exception occured. Could not insert new DiaryRecord.");
         }
     }
 
