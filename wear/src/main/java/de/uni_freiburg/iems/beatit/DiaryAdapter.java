@@ -77,7 +77,7 @@ public class DiaryAdapter extends WearableRecyclerView.Adapter<DiaryAdapter.Diar
             imageViewLabel = itemView.findViewById(R.id.image_view_diary_label);
             imageViewLabel.setOnClickListener(l -> {
                 int position = getAdapterPosition();
-                if (onDurationClickListener != null && position != RecyclerView.NO_POSITION) {
+                if (onLabelClickListener != null && position != RecyclerView.NO_POSITION) {
                     onLabelClickListener.onLabelClick(diary.get(position));
                 }
             });
