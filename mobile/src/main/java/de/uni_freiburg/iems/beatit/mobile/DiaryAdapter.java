@@ -12,13 +12,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.List;
 import java.util.Locale;
 
 import de.uni_freiburg.iems.beatit.DiaryRecord;
 
 public class DiaryAdapter extends ListAdapter<DiaryRecord, DiaryAdapter.DiaryHolder> {
-    private OnItemClickListener listener;
+    private OnDateClickListener onDateClickListener;
+    private OnDurationClickListener onDurationClickListener;
+    private OnLabelClickListener onLabelClickListener;
 
     public DiaryAdapter() {
         super(DIFF_CALLBACK);
@@ -27,16 +28,15 @@ public class DiaryAdapter extends ListAdapter<DiaryRecord, DiaryAdapter.DiaryHol
     private static final DiffUtil.ItemCallback<DiaryRecord> DIFF_CALLBACK = new DiffUtil.ItemCallback<DiaryRecord>() {
         @Override
         public boolean areItemsTheSame(DiaryRecord oldItem, DiaryRecord newItem) {
-            if(!oldItem.recordId.equals(newItem.recordId)) return false;
-            return true;
+            return (oldItem.recordId.equals(newItem.recordId));
         }
 
         @Override
         public boolean areContentsTheSame(DiaryRecord oldItem, DiaryRecord newItem) {
-            if(oldItem.duration != newItem.duration) return false;
-            if(oldItem.startDateAndTime != newItem.startDateAndTime) return false;
-            if(oldItem.userLabel != newItem.userLabel) return false;
-            if(oldItem.timeZone != newItem.timeZone) return false;
+            if (oldItem.duration != newItem.duration) return false;
+            if (oldItem.startDateAndTime.compareTo(newItem.startDateAndTime) != 0) return false;
+            if (oldItem.userLabel.compareTo(newItem.userLabel) != 0) return false;
+            if (!oldItem.timeZone.equals(newItem.timeZone)) return false;
             return true;
         }
     };
@@ -61,11 +61,11 @@ public class DiaryAdapter extends ListAdapter<DiaryRecord, DiaryAdapter.DiaryHol
     private int chooseImageSource(DiaryRecord.Label userLabel) {
         switch (userLabel) {
             case UNLABELED:
-                return R.drawable.ic_diary_label_unlabeled_24dp;
+                return R.drawable.ic_diary_label_unlabeled_50dp;
             case NOT_SMOKING:
-                return R.drawable.ic_diary_label_not_smoking_24dp;
+                return R.drawable.ic_diary_label_not_smoking_50dp;
             case SMOKING:
-                return R.drawable.ic_diary_label_smoking_24dp;
+                return R.drawable.ic_diary_label_smoking_50dp;
             default:
                 return 0;
         }
@@ -78,30 +78,60 @@ public class DiaryAdapter extends ListAdapter<DiaryRecord, DiaryAdapter.DiaryHol
     class DiaryHolder extends RecyclerView.ViewHolder {
         private TextView textViewTime;
         private TextView textViewDuration;
+        private TextView textViewMinutesLabel;
         private ImageView imageViewLabel;
 
         public DiaryHolder(View itemView) {
             super(itemView);
             textViewTime = itemView.findViewById(de.uni_freiburg.iems.beatit.mobile.R.id.text_view_diary_item_time);
+            textViewMinutesLabel = itemView.findViewById(de.uni_freiburg.iems.beatit.mobile.R.id.text_view_diary_item_minutes_label);
             textViewDuration = itemView.findViewById(de.uni_freiburg.iems.beatit.mobile.R.id.text_view_diary_item_minutes);
             imageViewLabel = itemView.findViewById(de.uni_freiburg.iems.beatit.mobile.R.id.image_view_diary_label);
-            itemView.setOnClickListener(v -> {
+            imageViewLabel.setOnClickListener(l -> {
                 int position = getAdapterPosition();
-                if (listener != null && position != RecyclerView.NO_POSITION) {
-                    listener.onItemClick(getItem(position));
+                if (onLabelClickListener != null && position != RecyclerView.NO_POSITION) {
+                    onLabelClickListener.onLabelClick(getItem(position));
+                }
+            });
+            TextView.OnClickListener onClickListener = v -> {
+                int position = getAdapterPosition();
+                if (onDurationClickListener != null && position != RecyclerView.NO_POSITION) {
+                    onDurationClickListener.onDurationClick(getItem(position));
+                }
+            };
+            textViewMinutesLabel.setOnClickListener(onClickListener);
+            textViewDuration.setOnClickListener(onClickListener);
+
+            textViewTime.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (onDateClickListener != null && position != RecyclerView.NO_POSITION) {
+                    onDateClickListener.onDateClick(getItem(position));
                 }
             });
         }
     }
 
-    public interface OnItemClickListener {
-        void onItemClick(DiaryRecord record);
+    public interface OnDateClickListener {
+        void onDateClick(DiaryRecord record);
     }
 
-
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        this.listener = listener;
+    public interface OnDurationClickListener {
+        void onDurationClick(DiaryRecord record);
     }
 
+    public interface OnLabelClickListener {
+        void onLabelClick(DiaryRecord record);
+    }
 
+    public void setOnDateClickListener(OnDateClickListener listener) {
+        this.onDateClickListener = listener;
+    }
+
+    public void setOnDurationClickListener(OnDurationClickListener listener) {
+        this.onDurationClickListener = listener;
+    }
+
+    public void setOnLabelClickListener(OnLabelClickListener listener) {
+        this.onLabelClickListener = listener;
+    }
 }
