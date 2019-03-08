@@ -78,25 +78,25 @@ public class SyncManager implements
             PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/recordWear");
             try {
                 for (DiaryRecord mRecord : mDatamanager.getDiarySync()) {
-                    if (mRecord.userLabel == DiaryRecord.Label.SMOKING) {
-                        DataMap map = new DataMap();
-                        map.putInt(DURATION_KEY, mRecord.duration);
-                        map.putString(RECORDID_KEY, mRecord.recordId);
-                        map.putString(TIMEZONE_KEY, mRecord.timeZone);
-                        map.putString(STARTDAT_KEY, mRecord.startDateAndTime.toString());
-                        map.putString(LABEL_KEY, mRecord.userLabel.toString());
-                        putDataMapReq.getDataMap().putDataMap(RECORD_KEY, map);
-                        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
-                        Task<DataItem> putDataTask = Wearable.getDataClient(context).putDataItem(putDataReq);
-                        putDataTask.addOnSuccessListener(
+                    Thread.sleep(100);
+                    DataMap map = new DataMap();
+                    map.putInt(DURATION_KEY, mRecord.duration);
+                    map.putString(RECORDID_KEY, mRecord.recordId);
+                    map.putString(TIMEZONE_KEY, mRecord.timeZone);
+                    SimpleDateFormat format = new SimpleDateFormat("dd-MM-yy HH':'mm");
+                    map.putString(STARTDAT_KEY, format.format(mRecord.startDateAndTime));
+                    map.putString(LABEL_KEY, mRecord.userLabel.toString());
+                    putDataMapReq.getDataMap().putDataMap(RECORD_KEY, map);
+                    PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+                    Task<DataItem> putDataTask = Wearable.getDataClient(context).putDataItem(putDataReq);
+                    putDataTask.addOnSuccessListener(
 
-                                new OnSuccessListener<DataItem>() {
-                                    @Override
-                                    public void onSuccess(DataItem dataItem) {
-                                        Log.v("Connection", "DataSend");
-                                    }
-                                });
-                    }
+                            new OnSuccessListener<DataItem>() {
+                                @Override
+                                public void onSuccess(DataItem dataItem) {
+                                    Log.v("Connection", "DataSend");
+                                }
+                            });
                 }
             } catch (Exception e) {
                 Log.v("Connection", e.toString());
@@ -128,11 +128,6 @@ public class SyncManager implements
         final String STARTDAT_KEY = "com.example.startDateAndTime.record";
         final String LABEL_KEY = "com.example.userLabel.record";
         final String RECORD_KEY = "com.example.record.record";
-        int duration;
-        String recordId;
-        String timeZone;
-        String startDateAndTime;
-        String userLabel;
         for (DataEvent event : dataEventBuffer) {
             if (event.getType() == DataEvent.TYPE_CHANGED) {
                 // DataItem changed
@@ -140,6 +135,11 @@ public class SyncManager implements
                 DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
                 if (item.getUri().getPath().compareTo("/recordMobile") == 0) {
                     Log.v("Mobile", "DataReceived");
+                    final int duration;
+                    final String recordId;
+                    final String timeZone;
+                    final String startDateAndTime;
+                    final String userLabel;
                     DataMap dataMap = dataMapItem.getDataMap().getDataMap(RECORD_KEY);
                     duration = dataMap.getInt(DURATION_KEY);
                     recordId = dataMap.getString(RECORDID_KEY);
@@ -148,19 +148,37 @@ public class SyncManager implements
                     userLabel = dataMap.getString(LABEL_KEY);
                     Log.v("Mobile", "DataReceived");
                     SimpleDateFormat format = new SimpleDateFormat("dd-MM-yy HH':'mm"); //new SimpleDateFormat("ddd MMM dd HH':'mm':'ss 'GTM+01:00' yy");
-                    Date date = Calendar.getInstance().getTime();
+
+                    final Date date;Date date1;
                     try {
-                        date = format.parse(startDateAndTime);
+                        date1 = format.parse(startDateAndTime);
                     } catch (ParseException e) {
                         Log.v("Connect", e.toString());
+                        date1 = Calendar.getInstance().getTime();
                     }
                     // need to be add to the Diary
-                    DiaryRecord.Label label = label = DiaryRecord.Label.UNLABELED;
-                    if (userLabel.equals("smoking")) {
+                    date = date1;
+                    DiaryRecord.Label label;
+                    if (userLabel.equals(DiaryRecord.Label.SMOKING.toString())) {
                         label = DiaryRecord.Label.SMOKING;
+                    }else if (userLabel.equals(DiaryRecord.Label.NOT_SMOKING.toString())) {
+                        label = DiaryRecord.Label.NOT_SMOKING;
+                    }else {
+                        label = DiaryRecord.Label.UNLABELED;
                     }
 
-                    DiaryDataManager.getInstance(context).insert( new DiaryRecord(DiaryRecord.Source.USER, label, date, timeZone, new Integer(duration)));
+                    AsyncTask.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                DiaryDataManager.getInstance(context).insert( new DiaryRecord(recordId, DiaryRecord.Source.USER, label, date, timeZone, new Integer(duration)));
+                            } catch (Exception e) {
+                                Log.v("Connect", e.toString());
+                            }
+                        }
+                    });
+
+
                 }
             }
         }

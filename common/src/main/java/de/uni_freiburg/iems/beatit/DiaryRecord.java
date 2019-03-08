@@ -80,4 +80,10 @@ public class DiaryRecord {
         this(source, startDateAndTime, timeZone, duration);
         this.userLabel = userLabel;
     }
+
+    public DiaryRecord(@NonNull String recoordId, Source source, Label userLabel, Date startDateAndTime, String timeZone, int duration) {
+        this(source, startDateAndTime, timeZone, duration);
+        this.userLabel = userLabel;
+        this.recordId = recoordId;
+    }
 }
