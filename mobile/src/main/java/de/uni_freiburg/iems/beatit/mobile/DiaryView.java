@@ -85,8 +85,9 @@ public class DiaryView extends Fragment {
                     returnedCal.set(Calendar.HOUR_OF_DAY, hourOfDay);
                     returnedCal.set(Calendar.MINUTE, minute);
                     // update date and time
-                    recordClicked.startDateAndTime = returnedCal.getTime();
-                    diaryViewModel.update(recordClicked);
+                    DiaryRecord updatedRecord = DiaryRecord.clone(recordClicked);
+                    updatedRecord.startDateAndTime = returnedCal.getTime();
+                    diaryViewModel.update(updatedRecord);
                 }, inputCal.get(Calendar.HOUR_OF_DAY), inputCal.get(Calendar.MINUTE), true).show();
 
             }, inputCal.get(Calendar.YEAR), inputCal.get(Calendar.MONTH), inputCal.get(Calendar.DAY_OF_MONTH)).show();
@@ -115,19 +116,19 @@ public class DiaryView extends Fragment {
     }
 
     private void rotateLabel() {
-
+DiaryRecord updatedRecord = DiaryRecord.clone(mSelectedRecord);
         switch (mSelectedRecord.userLabel) {
             case UNLABELED:
-                mSelectedRecord.userLabel = DiaryRecord.Label.NOT_SMOKING;
+                updatedRecord.userLabel = DiaryRecord.Label.NOT_SMOKING;
                 break;
             case NOT_SMOKING:
-                mSelectedRecord.userLabel = DiaryRecord.Label.SMOKING;
+                updatedRecord.userLabel = DiaryRecord.Label.SMOKING;
                 break;
             case SMOKING:
-                mSelectedRecord.userLabel = DiaryRecord.Label.UNLABELED;
+                updatedRecord.userLabel = DiaryRecord.Label.UNLABELED;
                 break;
         }
-        diaryViewModel.update(mSelectedRecord);
+        diaryViewModel.update(updatedRecord);
     }
 
     @Override
@@ -136,8 +137,9 @@ public class DiaryView extends Fragment {
 
         if (requestCode == UPDATE_DURATION_REQUEST && resultCode == RESULT_OK) {
             int durationInMinutes = data.getIntExtra(UpdatedDurationView.EXTRA_DURATION, 0);
-            mSelectedRecord.duration = (int) TimeUnit.MINUTES.toMillis(durationInMinutes);
-            diaryViewModel.update(mSelectedRecord);
+            DiaryRecord updatedRecord = DiaryRecord.clone(mSelectedRecord);
+            updatedRecord.duration = (int) TimeUnit.MINUTES.toMillis(durationInMinutes);
+            diaryViewModel.update(updatedRecord);
         } else {
             Toast.makeText(getContext(), "Update failed", Toast.LENGTH_SHORT);
         }

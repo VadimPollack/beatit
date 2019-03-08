@@ -44,7 +44,7 @@ import de.uni_freiburg.iems.beatit.DiaryRecord;
 public class MainActivity extends AppCompatActivity implements
         DataClient.OnDataChangedListener,
         MessageClient.OnMessageReceivedListener,
-        CapabilityClient.OnCapabilityChangedListener{
+        CapabilityClient.OnCapabilityChangedListener {
 
     LinkedList<String> SmokeList;
 
@@ -75,20 +75,23 @@ public class MainActivity extends AppCompatActivity implements
         mDataclient = Wearable.getDataClient(this);
         mDataclient.addListener(this);
 
-        Log.v("Connect","Constructor");
+        Log.v("Connect", "Constructor");
 
-        if(!dir.exists()){ dir.mkdirs();}
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
         file = new File(dir, fileName);
         SmokeList = new LinkedList<>();
-        try{
+        try {
             Scanner s = new Scanner(file);
 
-            while (s.hasNext()){
+            while (s.hasNext()) {
                 SmokeList.add(s.nextLine());
             }
             s.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        catch(Exception e){ e.printStackTrace();}
 
         final Fragment startFragment = DiaryView.newInstance();
         getSupportFragmentManager()
@@ -145,9 +148,12 @@ public class MainActivity extends AppCompatActivity implements
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        sendData(DiaryDataManager.getInstance(context));
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            return true;
+        }
+        if (id == R.id.action_sync) {
+            sendData(DiaryDataManager.getInstance(context));
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -164,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements
 
     /**
      * Checks if the app has permission to write to device storage
-     *
+     * <p>
      * If the app does not has permission then the user will be prompted to grant permissions
      *
      * @param activity
@@ -193,7 +199,6 @@ public class MainActivity extends AppCompatActivity implements
         final String RECORD_KEY = "com.example.record.record";
 
 
-
         Log.v("Mobile", "DataChanged");
         for (DataEvent event : dataEventBuffer) {
             if (event.getType() == DataEvent.TYPE_CHANGED) {
@@ -217,7 +222,8 @@ public class MainActivity extends AppCompatActivity implements
                     SmokeList.push(startDateAndTime);
 
                     android.icu.text.SimpleDateFormat format = new android.icu.text.SimpleDateFormat("dd-MM-yy HH':'mm"); //new SimpleDateFormat("ddd MMM dd HH':'mm':'ss 'GTM+01:00' yy");
-                    final Date date;Date date1;
+                    final Date date;
+                    Date date1;
                     try {
                         date1 = format.parse(startDateAndTime);
                     } catch (ParseException e) {
@@ -229,24 +235,22 @@ public class MainActivity extends AppCompatActivity implements
                     final DiaryRecord.Label label;
                     if (userLabel.equals(DiaryRecord.Label.SMOKING.toString())) {
                         label = DiaryRecord.Label.SMOKING;
-                    }else if (userLabel.equals(DiaryRecord.Label.NOT_SMOKING.toString())) {
+                    } else if (userLabel.equals(DiaryRecord.Label.NOT_SMOKING.toString())) {
                         label = DiaryRecord.Label.NOT_SMOKING;
-                    }else {
-                        label  = DiaryRecord.Label.UNLABELED;
+                    } else {
+                        label = DiaryRecord.Label.UNLABELED;
                     }
 
                     AsyncTask.execute(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                DiaryDataManager.getInstance(context).insert( new DiaryRecord(recordId, DiaryRecord.Source.USER, label, date, timeZone, new Integer(duration)));
+                                DiaryDataManager.getInstance(context).insert(new DiaryRecord(recordId, DiaryRecord.Source.USER, label, date, timeZone, new Integer(duration)));
                             } catch (Exception e) {
                                 Log.v("Connect", e.toString());
                             }
                         }
                     });
-
-
 
 
                 } else if (event.getType() == DataEvent.TYPE_DELETED) {

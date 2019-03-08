@@ -35,9 +35,13 @@ public class DiaryRecord {
         MACHINE(1);
         private int code;
 
-        Source(int code){this.code = code;}
+        Source(int code) {
+            this.code = code;
+        }
 
-        public int getCode() {return code;}
+        public int getCode() {
+            return code;
+        }
     }
 
 
@@ -67,7 +71,7 @@ public class DiaryRecord {
     public int duration;
 
     @Ignore
-    public DiaryRecord(Source source, Date startDateAndTime, String timeZone, int duration){
+    public DiaryRecord(Source source, Date startDateAndTime, String timeZone, int duration) {
         this.recordId = UUID.randomUUID().toString();
         this.source = source;
         this.startDateAndTime = startDateAndTime;
@@ -85,5 +89,15 @@ public class DiaryRecord {
         this(source, startDateAndTime, timeZone, duration);
         this.userLabel = userLabel;
         this.recordId = recoordId;
+    }
+
+    public static DiaryRecord clone(DiaryRecord record) {
+        return new DiaryRecord(
+                record.recordId,
+                record.source,
+                record.userLabel,
+                record.startDateAndTime,
+                record.timeZone,
+                record.duration);
     }
 }
