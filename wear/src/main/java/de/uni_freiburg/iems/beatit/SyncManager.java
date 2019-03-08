@@ -88,6 +88,7 @@ public class SyncManager implements
                     map.putString(LABEL_KEY, mRecord.userLabel.toString());
                     putDataMapReq.getDataMap().putDataMap(RECORD_KEY, map);
                     PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+                    putDataReq.setUrgent();
                     Task<DataItem> putDataTask = Wearable.getDataClient(context).putDataItem(putDataReq);
                     putDataTask.addOnSuccessListener(
 
