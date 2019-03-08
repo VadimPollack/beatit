@@ -68,11 +68,10 @@ public class DiaryDataManager {
         protected Void doInBackground(DiaryRecord... diaryRecords) {
             try {
                 this.diaryRecordDao.insert(diaryRecords[0]);
-                return null;
-
+            } catch (Exception e) {
+                Log.e("InsertNoteAsync", "Exception occured. Could not insert new DiaryRecord.");
             }
-            catch (Exception e )
-            Log.e("InsertNoteAsync", "Exception occured. Could not insert new DiaryRecord.");
+            return null;
         }
     }
 
