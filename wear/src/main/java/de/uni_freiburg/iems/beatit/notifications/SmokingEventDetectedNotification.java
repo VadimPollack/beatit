@@ -39,7 +39,7 @@ public class SmokingEventDetectedNotification {
         Intent yesIntent = new Intent(mContext, SmokeEventDetectedIntentService.class);
         yesIntent.setAction(SmokeEventDetectedIntentService.ACTION_YES);
         yesIntent.putExtra("ID", mDiaryRecord.recordId);
-        PendingIntent yesPendingIntent = PendingIntent.getService(mContext, 0, yesIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent yesPendingIntent = PendingIntent.getService(mContext, 0, yesIntent, PendingIntent.FLAG_IMMUTABLE);
         NotificationCompat.Action yesAction =
                 new NotificationCompat.Action.Builder(
                         R.drawable.ic_cigarette_black_24dp,
@@ -51,7 +51,7 @@ public class SmokingEventDetectedNotification {
         Intent noIntent = new Intent(mContext, SmokeEventDetectedIntentService.class);
         noIntent.putExtra("ID", mDiaryRecord.recordId);
         noIntent.setAction(SmokeEventDetectedIntentService.ACTION_NO);
-        PendingIntent noPendingIntent = PendingIntent.getService(mContext, 0, noIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent noPendingIntent = PendingIntent.getService(mContext, 0, noIntent, PendingIntent.FLAG_IMMUTABLE);
         NotificationCompat.Action noAction =
                 new NotificationCompat.Action.Builder(
                         R.drawable.ic_crossed_cigarette_black_24dp,

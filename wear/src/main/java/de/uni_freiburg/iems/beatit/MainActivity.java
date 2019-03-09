@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements
         MotionMonitor(R.string.navigation_drawer_monitoring_title, R.drawable.ic_monitoring_black_24dp),
        // Diary(R.string.navigation_drawer_diary_title, R.drawable.ic_diary_black_24dp),
         Sync(R.string.navigation_drawer_sync_title, R.drawable.ic_sync_black_24dp),
-        Settings(R.string.navigation_drawer_settings_title, R.drawable.ic_settings_black_24dp);
+        Settings(R.string.navigation_drawer_settings_title, R.drawable.ic_notifications_black_24dp);
 
         final int titleRes;
         final int drawableRes;
