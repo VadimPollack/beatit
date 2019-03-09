@@ -5,7 +5,7 @@
     values-round/strings.xml for round devices.
     -->
     <string name="showDiary">Show Log</string>
-    <string name="navigation_drawer_settings_title">Settings</string>
+    <string name="navigation_drawer_settings_title">Notification</string>
     <string name="navigation_drawer_sync_title">Sync</string>
     <string name="navigation_drawer_diary_title">Diary</string>
     <string name="navigation_drawer_monitoring_title">Monitoring</string>
