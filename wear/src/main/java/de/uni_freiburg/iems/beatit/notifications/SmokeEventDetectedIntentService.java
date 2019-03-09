@@ -17,8 +17,8 @@ public class SmokeEventDetectedIntentService extends IntentService {
 
     public static final String ACTION_YES =
             "de.uni_freiburg.iems.beatit.notifications.action.YES";
-    public static final String ACTION_NO =
-            "de.uni_freiburg.iems.beatit.notifications.action.NO";
+    public static final String ACTION_DELETE =
+            "de.uni_freiburg.iems.beatit.notifications.action.DELETE";
 
     public SmokeEventDetectedIntentService() {
         super("SmokeEventDetectedIntentService");
@@ -37,7 +37,7 @@ public class SmokeEventDetectedIntentService extends IntentService {
                 final String action = intent.getAction();
                 if (ACTION_YES.equals(action)) {
                     currentRecord.userLabel = DiaryRecord.Label.SMOKING;
-                } else if (ACTION_NO.equals(action)) {
+                } else if (ACTION_DELETE.equals(action)) {
                     currentRecord.userLabel = DiaryRecord.Label.NOT_SMOKING;
                 }
             }
