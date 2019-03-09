@@ -24,10 +24,12 @@ public class MainActivity extends AppCompatActivity implements
         AmbientModeSupport.AmbientCallbackProvider, WearableNavigationDrawerView.OnItemSelectedListener {
 
     private MainActivityViewModel viewModel;
+    private Context mContext;
+    private NavigationAdapter mNavigation;
 
     private enum NavigationSection {
         MotionMonitor(R.string.navigation_drawer_monitoring_title, R.drawable.ic_monitoring_black_24dp),
-        Diary(R.string.navigation_drawer_diary_title, R.drawable.ic_diary_black_24dp),
+       // Diary(R.string.navigation_drawer_diary_title, R.drawable.ic_diary_black_24dp),
         Sync(R.string.navigation_drawer_sync_title, R.drawable.ic_sync_black_24dp),
         Settings(R.string.navigation_drawer_settings_title, R.drawable.ic_settings_black_24dp);
 
@@ -40,9 +42,9 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private static final NavigationSection DEFAULT_SECTION = NavigationSection.MotionMonitor;
+    //private static final NavigationSection DEFAULT_SECTION = NavigationSection.Diary;
 
-    private NavigationSection mCurrentSection = DEFAULT_SECTION;
+    //private NavigationSection mCurrentSection = DEFAULT_SECTION;
 
     private WearableNavigationDrawerView mWearableNavigationDrawer;
 
@@ -57,19 +59,33 @@ public class MainActivity extends AppCompatActivity implements
         //Enable AmbientMode (Always-On)
         AmbientModeSupport.attach(this);
 
+
+        mContext = getApplicationContext();
+        viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
+        viewModel.setOnSmokingEventDetectedListener((record) -> {
+            new SmokingEventDetectedNotification(mContext, record).show();
+
+            //sendGlobalIntent(record.startDateAndTime.getTime(), record.startDateAndTime.getTime() + record.duration);
+        });
         mWearableNavigationDrawer = (WearableNavigationDrawerView) findViewById(R.id.top_navigation_drawer);
-        mWearableNavigationDrawer.setAdapter(new NavigationAdapter(this));
+        mNavigation = new NavigationAdapter(this);
+        mWearableNavigationDrawer.setAdapter(mNavigation );
         mWearableNavigationDrawer.addOnItemSelectedListener(this);
 
-
-        viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
-
-        final Fragment startFragment = MonitoringView.newInstance();
+        final Fragment startFragment = DiaryView.newInstance();
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container, startFragment)
                 .commit();
+
+        /*viewModel.getIsMonitoringStarted().observe(mContext, isMonitoringStarted -> {
+            if (isMonitoringStarted == null) return;
+            NavigationSection.MotionMonitor.drawableRes = R.drawable.ic_stop_white_24dp;
+            //startStopButton.setImageResource(chooseImageResource(isMonitoringStarted));
+        });*/
+
     }
+
 
     //---------------------Navigation Drawer--------------------------------------
     private final class NavigationAdapter
@@ -87,6 +103,11 @@ public class MainActivity extends AppCompatActivity implements
 
         @Override
         public Drawable getItemDrawable(int index) {
+            if (NavigationSection.MotionMonitor == NavigationSection.values()[index]) {
+                if (viewModel.getIsMonitoringStarted().getValue()) {
+                    return mContext.getDrawable(R.drawable.ic_stop_black_24dp);
+                }
+            }
             return mContext.getDrawable(NavigationSection.values()[index].drawableRes);
         }
 
@@ -101,39 +122,62 @@ public class MainActivity extends AppCompatActivity implements
         NavigationSection selectedSection = NavigationSection.values()[index];
 
         // Only replace the fragment if the section is changing.
-        if (selectedSection == mCurrentSection) {
+        /*if (selectedSection == mCurrentSection) {
             return;
-        }
+        }*/
 
 
         Fragment selectedFragment = null;
         switch (selectedSection) {
             case MotionMonitor:
-                selectedFragment = MonitoringView.newInstance();
-                break;
-            case Diary:
-                selectedFragment = DiaryView.newInstance();
+                onStartStopButtonClicked();
+
                 break;
             case Settings:
                 viewModel.simulateSmokingEventDetected();
-                selectedSection = mCurrentSection;
+                //selectedSection = mCurrentSection;
                 break;
             case Sync:
                 viewModel.sync();
-                selectedSection = mCurrentSection;
+                //selectedSection = mCurrentSection;
                 break;
             default:
                 selectedFragment = DiaryView.newInstance();
         }
-        mCurrentSection = selectedSection;
+       /* mCurrentSection = selectedSection;
         if (selectedFragment == null) return;
         final Fragment selectedFragmentFinal = selectedFragment;
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container, selectedFragmentFinal)
-                .commit();
+                .commit(); */
     }
 
+    private void sendGlobalIntent(long startTime, long stopTime) {
+        Intent intent = new Intent();
+        intent.setAction("de.uni_freiburg.iems.beatit");
+        intent.putExtra("StartTime", (new Timestamp(startTime)).toString());
+        intent.putExtra("StopTime", (new Timestamp(stopTime)).toString());
+        intent.putExtra("SenderInfo", "TEAM2_SMOKING_DETECTED");
+        mContext.sendBroadcast(intent);
+    }
+
+    private void onStartStopButtonClicked() {
+        Boolean isStarted = viewModel.getIsMonitoringStarted().getValue();
+        if (isStarted == null) return;
+        if (isStarted)
+            viewModel.stopMonitoring();
+        else
+            viewModel.startMonitoring();
+        mNavigation.notifyDataSetChanged();
+    }
+
+    private int chooseImageResource(Boolean isStarted) {
+        if (isStarted)
+            return R.drawable.ic_stop_white_24dp;
+        else
+            return R.drawable.ic_monitoring_white_24dp;
+    }
     //----------------------Ambient Mode----------------------------------------
     @Override
     public AmbientModeSupport.AmbientCallback getAmbientCallback() {
