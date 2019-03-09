@@ -20,7 +20,7 @@ public class SmokingEventDetectedNotification {
     Context mContext;
     DiaryRecord mDiaryRecord;
 
-    public SmokingEventDetectedNotification(Context context, DiaryRecord record){
+    public SmokingEventDetectedNotification(Context context, DiaryRecord record) {
         mContext = context;
         mDiaryRecord = record;
     }
@@ -39,7 +39,7 @@ public class SmokingEventDetectedNotification {
         Intent yesIntent = new Intent(mContext, SmokeEventDetectedIntentService.class);
         yesIntent.setAction(SmokeEventDetectedIntentService.ACTION_YES);
         yesIntent.putExtra("ID", mDiaryRecord.recordId);
-        PendingIntent yesPendingIntent = PendingIntent.getService(mContext, 0, yesIntent, PendingIntent.FLAG_IMMUTABLE);
+        PendingIntent yesPendingIntent = PendingIntent.getService(mContext, 0, yesIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Action yesAction =
                 new NotificationCompat.Action.Builder(
                         R.drawable.ic_cigarette_black_24dp,
@@ -47,17 +47,11 @@ public class SmokingEventDetectedNotification {
                         yesPendingIntent)
                         .build();
 
-        // Build intent for "No" action button
-        Intent noIntent = new Intent(mContext, SmokeEventDetectedIntentService.class);
-        noIntent.putExtra("ID", mDiaryRecord.recordId);
-        noIntent.setAction(SmokeEventDetectedIntentService.ACTION_NO);
-        PendingIntent noPendingIntent = PendingIntent.getService(mContext, 0, noIntent, PendingIntent.FLAG_IMMUTABLE);
-        NotificationCompat.Action noAction =
-                new NotificationCompat.Action.Builder(
-                        R.drawable.ic_crossed_cigarette_black_24dp,
-                        "No",
-                        noPendingIntent)
-                        .build();
+        // Build intent for delete action
+        Intent deleteIntent = new Intent(mContext, SmokeEventDetectedIntentService.class);
+        deleteIntent.setAction(SmokeEventDetectedIntentService.ACTION_DELETE);
+        deleteIntent.putExtra("ID", mDiaryRecord.recordId);
+        PendingIntent deletePendingIntent = PendingIntent.getService(mContext, 0, deleteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // 2. Build the BIG_TEXT_STYLE
         DateFormat df = new SimpleDateFormat("EEEE, d MMM, HH:mm", Locale.ENGLISH);
@@ -85,16 +79,8 @@ public class SmokingEventDetectedNotification {
                         .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
                         //.setContentIntent(viewPendingIntent)
                         .addAction(yesAction)
-                        .addAction(noAction);
+                        .setDeleteIntent(deletePendingIntent);
 
-        // Enables launching app in Wear 2.0 while keeping the old Notification Style behavior.
-        NotificationCompat.Action mainAction = new NotificationCompat.Action.Builder(
-                R.drawable.open_on_phone,
-                "Open",
-                viewPendingIntent)
-                .build();
-
-        notificationBuilder.addAction(mainAction);
 
         // instance of the NotificationManager service
         NotificationManagerCompat notificationManager =
@@ -103,7 +89,8 @@ public class SmokingEventDetectedNotification {
         // Build the notification and notify it using notification manager.
         notificationManager.notify(getNotificationIdFromUUID(mDiaryRecord.recordId), notificationBuilder.build());
     }
-    public static int getNotificationIdFromUUID(String str){
+
+    public static int getNotificationIdFromUUID(String str) {
         return UUID.fromString(str).hashCode();
     }
 }
